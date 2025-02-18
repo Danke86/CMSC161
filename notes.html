@@ -1,0 +1,59 @@
+<script id="vertex-shader" type="notjs">#version 300 es     --> position 
+    in vec4 a_position;             -> (x,y,z,w)
+    in float a_point_size;          -> width and thickness of the line
+    void main() {
+    gl_Position = a_position;       -> actually position in glsl
+    gl_PointSize = a_point_size;    -> only need it if we render points
+    }
+</script>
+
+<script id="fragment-shader" type="notjs">#version 300 es   --> coloring
+    precision mediump float;        -> precision
+    out vec4 outColor;              -> HAVE TO STRONGLY DEFINE THE DATA TYPES (C++)
+    void main() {
+    outColor = vec4(1, 0, 0, 1); //red
+    }
+</script>
+
+right hand coordinate system
+x - horizontal
+y - vertical
+z - depth
+
+<!-- Function for creating and compiling shader programs -->
+<script>
+    function createShader (gl, type, sourceCode) {
+    // Compiles either a shader of type gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+    var shader = gl.createShader( type );
+    gl.shaderSource( shader, sourceCode );
+    gl.compileShader( shader );
+    if ( !gl.getShaderParameter(shader, gl.COMPILE_STATUS) ) {
+        var info = gl.getShaderInfoLog( shader );
+        throw 'Could not compile WebGL program. \n\n' + info;
+    }
+    return shader;
+    }
+</script>
+
+coordinate system 
+-1 to 1
+
+point =  (x - D/2)/(D/2)    
+
+
+================ 2 =======================
+
+Uniform color = 
+
+*triangle can create any approximate shape
+
+TRIANGLE_FAN => vertex one will always be included
+TRIANGLE_STRIP => 
+TRIANGLE_SPAN =>
+
+BUFFER OBJECT => pass entire array into openGL
+* 1D array
+
+DRAW PARAMETERS:
+gl.STATIC_DRAW
+gl.STREAM_DRAW

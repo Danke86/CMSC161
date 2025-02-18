@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cinense Exer 01</title>
+</head>
+<body>
+    <canvas id="output" width="480" height="480"></canvas>
+
+    <!-- VERTEX SHADER -->
+     <!-- Attributes concerning vertex position and sizes -->
+     <script id="vertex-shader" type="notjs">#version 300 es
+        in vec4 a_position; 
+        in float a_point_size;
+        void main() {
+        gl_Position = a_position;
+        gl_PointSize = a_point_size;
+        }
+    </script>
+    
+    <!-- FRAGMENT SHADER -->
+     <!-- COLORING -->
+    <script id="fragment-shader" type="notjs">#version 300 es
+        precision mediump float;
+        //in vec4 inColor;
+        out vec4 outColor;
+        void main() {
+        //outColor = inColor;
+        outColor = vec4(1, 1, 1, 1);
+        }
+    </script>
+
+    <!-- Function for creating and compiling shader programs -->
+    <script>
+        function createShader (gl, type, sourceCode) {
+        // Compiles either a shader of type gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+        var shader = gl.createShader( type );
+        gl.shaderSource( shader, sourceCode );
+        gl.compileShader( shader );
+        if ( !gl.getShaderParameter(shader, gl.COMPILE_STATUS) ) {
+            var info = gl.getShaderInfoLog( shader );
+            throw 'Could not compile WebGL program. \n\n' + info;
+        }
+        return shader;
+        }
+    </script>
+
+    <script>
+        function convertCoordsToGL( num, maxDimension, dimension){ 
+            //num - coordinate, maxDimension - maximum length of the dimension
+            //dimension: x = 0, y = 1
+
+            halfDimension = maxDimension/2
+
+            if (dimension == 0){
+                return (num - halfDimension)/halfDimension
+            }else if(dimension == 1){
+                return (halfDimension - num)/halfDimension
+            }
+        }
+
+        function main(){
+            const canvas = document.querySelector('#output');
+            if(!canvas){
+                console.log("Canvas element with specified ID ('output') cannot be found.");
+            }
+
+            //Setting up the WebGL Context
+            const gl = canvas.getContext('webgl2');
+
+            // getting the source code from the file
+            const vertexShaderSource =
+            document.querySelector('#vertex-shader').text;
+            const fragmentShaderSource =
+            document.querySelector('#fragment-shader').text;
+
+            // function call to createShader; the return value is captured
+            // by vertexShader and fragmentShader
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+            //Creation and initialization of GL program
+            var program = gl.createProgram();
+            // Attach pre-existing shaders
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+            gl.linkProgram(program);
+            if ( !gl.getProgramParameter( program, gl.LINK_STATUS) ) {
+                var info = gl.getProgramInfoLog(program);
+                throw 'Could not compile WebGL program. \n\n' + info;
+            }
+
+            // set the program created earlier
+            gl.useProgram(program);
+            // clear the screen before drawing anything
+            gl.clearColor(0.0, 0.0, 0.0, 1.0); // white- RGBA
+            gl.clear(gl.COLOR_BUFFER_BIT); //execute - 
+
+            // Declaration of pointers to the attributes
+            const aPositionPointer = gl.getAttribLocation(program, 'a_position');
+            const aPointSizePointer = gl.getAttribLocation(program, 'a_point_size');
+            // const inColorPointer = gl.getAttribLocation(program, 'inColor');
+
+            let offset = 0; // start index
+            let count = 1; // only one point
+
+
+            let n = 237 //number of vertices
+            const maxDimensionLength = 480
+
+            //x-coordinates and y-coordinates
+            const vertexX = [301, 312, 325, 291, 336, 282, 273, 347, 264, 206, 218, 255, 358, 374, 394, 191, 230, 244, 324, 348, 404, 413, 299, 426, 179, 273, 246, 439, 169, 223, 201, 449, 178, 455, 156, 144, 458, 95, 104, 113, 130, 452, 86, 156, 78, 118, 149, 172, 447, 109, 142, 441, 457, 462, 136, 190, 365, 437, 75, 84, 94, 369, 431, 448, 41, 51, 66, 213, 375, 426, 438, 457, 28, 130, 381, 387, 393, 397, 404, 408, 443, 22, 390, 449, 463, 237, 374, 382, 432, 457, 18, 126, 250, 368, 405, 440, 261, 391, 376, 382, 434, 449, 21, 404, 462, 26, 126, 390, 437, 443, 100, 31, 94, 110, 370, 379, 40, 51, 64, 76, 85, 119, 128, 401, 458, 381, 392, 132, 137, 453, 258, 143, 239, 248, 229, 234, 447, 152, 218, 244, 162, 171, 181, 192, 205, 439, 266, 292, 431, 309, 330, 355, 421, 377, 399, 411];
+            const vertexY = [146, 145, 148, 149, 151, 153, 157, 157, 161, 163, 164, 164, 164, 164, 164, 165, 166, 166, 166, 165, 165, 166, 168, 170, 171, 171, 175, 176, 179, 179, 183, 183, 188, 190, 192, 196, 197, 199, 199, 199, 200, 200, 201, 202, 204, 203, 203, 204, 204, 206, 205, 206, 205, 206, 208, 207, 208, 208, 209, 209, 210, 210, 210, 209, 212, 211, 211, 212, 212, 211, 213, 212, 214, 213, 213, 214, 214, 214, 214, 213, 213, 216, 215, 216, 216, 217, 218, 218, 218, 217, 220, 220, 220, 220, 220, 219, 222, 221, 224, 224, 223, 223, 225, 226, 225, 228, 227, 228, 228, 227, 229, 231, 231, 231, 232, 231, 233, 233, 233, 233, 233, 233, 234, 234, 234, 236, 236, 239, 244, 243, 245, 248, 248, 247, 250, 250, 249, 251, 251, 252, 253, 254, 254, 254, 253, 254, 255, 258, 258, 260, 261, 262, 261, 263, 264, 263];
+
+            //loops through the coordinates and converts them into GL coordinates before drawing the arrays for the points
+            for (let i = 0; i < n; i++) {
+                let drawX = convertCoordsToGL(vertexX[i], maxDimensionLength, 0)
+                let drawY = convertCoordsToGL(vertexY[i], maxDimensionLength, 1)
+                console.log("Drew vertex at: " + drawX + ", " + drawY)
+                gl.vertexAttrib4f(aPositionPointer, drawX, drawY, 0.0, 1.0);
+                gl.vertexAttrib1f(aPointSizePointer, 2.0);
+                gl.drawArrays(gl.POINTS, offset, count);
+            }
+
+            // gl.vertexAttrib4f(aPointSizePointer, 0.0, 0.0, 0.0, 1.0);
+            // gl.vertexAttrib1f(aPointSizePointer, 4.0);
+            // // gl.vertexAttrib4f(inColorPointer, 1.0, 0.0, 0.0, 1.0);
+            // gl.drawArrays(gl.POINTS, offset, count);
+
+        }
+    
+    main()
+    </script>
+
+</body>
+</html>

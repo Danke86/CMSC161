@@ -57,3 +57,27 @@ BUFFER OBJECT => pass entire array into openGL
 DRAW PARAMETERS:
 gl.STATIC_DRAW
 gl.STREAM_DRAW
+
+[x,y,0,1]
+
+[x+Tx,y+Ty,z+Tz,1]
+[x*Sx,y*Sy,z*Sz,1]
+
+//w/o rotation
+[x*Sx 0 0 0]
+[0 y*Sy 0 0]
+[0 0 z*Sz 0]
+[Tx Ty Tz 1]
+
+//w/ rotation
+[cosValue -sinValue 0 0]
+[sinValue cosValue 0 0]
+[0 0 1 0]
+[0 0 0 1]
+
+Transformation standard OpenGL: Translate -> Scaling
+
+
+Save the current state: output from previous will become input for next tranformation
+Remove the name of the pokemon
+BONUS Exercise 4: allow perform rotation about an arbitrary point

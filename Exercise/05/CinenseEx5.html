@@ -7,23 +7,43 @@
     <canvas id="output" width="960" height="960"></canvas>
 
     <!-- USER INTERFACE -->
-     <div>
+    <div>
+        AFFINE TRANSFORMATION
+    </div>
+    <br>
+
+    <div>
         <button id="translateX">MOVE X</button>
         <button id="translateY">MOVE Y</button>
         <button id="translate">MOVE</button>
         <button id="scale">SCALE</button>
         <button id="rotate">ROTATE</button>
-     </div>
-    
+    </div>
+        
     <br>
     <div>
-        X = <input type="text" id="tx" value="0">
-        Y = <input type="text" id="ty" value="0">
+        MOVE X BY = <input type="text" id="tx" value="0">
+        MOVE Y BY = <input type="text" id="ty" value="0">
         SCALE X by = <input type="text" id="Sx" value="1">  
         SCALE Y by = <input type="text" id="Sy" value="1">
-        ROTATE (DEGREES) = <input type="text" id="angle" value="0">
     </div>
-    
+    <br>
+    <div>
+        ROTATE AT X = <input type="text" id="angleX" value="0">
+        ROTATE AT Y = <input type="text" id="angleY" value="0">
+        ANGLE OF ROTATION = <input type="text" id="angle" value="0">
+    </div>
+
+    <div>
+        PROJECTION
+    </div>
+    <br>
+    <div>
+        View Point:
+        <br>
+        
+    </div>
+        
 
     <!-- VERTEX SHADER -->
      <!-- Attributes concerning vertex position and sizes -->

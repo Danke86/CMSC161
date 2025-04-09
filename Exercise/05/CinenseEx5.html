@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+    <html>
 <head>
     <title>Cinense Exer 05</title>
 </head>
@@ -10,7 +10,6 @@
     <div>
         AFFINE TRANSFORMATION
     </div>
-    <br>
 
     <div>
         <button id="translateX">MOVE X</button>
@@ -20,30 +19,68 @@
         <button id="rotate">ROTATE</button>
     </div>
         
-    <br>
     <div>
         MOVE X BY = <input type="text" id="tx" value="0">
         MOVE Y BY = <input type="text" id="ty" value="0">
         SCALE X by = <input type="text" id="Sx" value="1">  
         SCALE Y by = <input type="text" id="Sy" value="1">
     </div>
-    <br>
     <div>
         ROTATE AT X = <input type="text" id="angleX" value="0">
         ROTATE AT Y = <input type="text" id="angleY" value="0">
         ANGLE OF ROTATION = <input type="text" id="angle" value="0">
     </div>
-
+    <br>
     <div>
         PROJECTION
     </div>
-    <br>
     <div>
         View Point:
         <br>
-        
+        X = <input type="range" id="viewX" min="-1" max="1" value="0" step="0.01"> <span id="viewXValue">0.00</span>  |
+        Y = <input type="range" id="viewY" min="-1" max="1" value="0" step="0.01"> <span id="viewYValue">0.00</span> |
+        Z = <input type="range" id="viewZ" min="-1" max="1" value="0" step="0.01"> <span id="viewZValue">0.00</span>
+        <br>
+        Center Point:
+        <br>
+        X = <input type="range" id="centerX" min="-1" max="1" value="0" step="0.01"> <span id="centerXValue">0.00</span>|
+        Y = <input type="range" id="centerY" min="-1" max="1" value="0" step="0.01"> <span id="centerYValue">0.00</span>|
+        Z = <input type="range" id="centerZ" min="-1" max="1" value="0" step="0.01"> <span id="centerZValue">0.00</span>
+        <br>
+        Up Vector
+        <br>
+        X = <input type="range" id="upX" min="-1" max="1" value="0" step="0.01"> <span id="upXValue">0.00</span> |
+        Y = <input type="range" id="upY" min="-1" max="1" value="1" step="0.01"> <span id="upYValue">1.00</span> |
+        Z = <input type="range" id="upZ" min="-1" max="1" value="0" step="0.01"> <span id="upZValue">0.00</span>
     </div>
-        
+    <div>
+        <input type="checkbox" id="perspectiveToggle"> Perspective <button id="updateProjection">Update Projection</button>
+        <br>
+        Left = <input type="text" id="Left" value="-1"> Right = <input type="text" id="Right" value="1">
+        <br>
+        Top = <input type="text" id="Left" value="1"> Bottom = <input type="text" id="Right" value="-1">
+        <br>
+        Near = <input type="range" id="near" min="0.3" max="1" value="0.3" step="0.01"> <span id="nearValue">0.00</span> |
+        Far = <input type="range" id="far" min="1" max="2" value="1" step="0.01"> <span id="farValue">0.00</span> |
+        Angle = <input type="range" id="angleProject" min="0" max="180" value="90" step="0.01"> <span id="angleProjectValue">0.00</span>
+    </div>
+    
+    <script>
+        const ranges = document.querySelectorAll('input[type="range"]');
+    
+        ranges.forEach(range => {
+            const valueDisplay = document.getElementById(range.id + 'Value');
+            if (valueDisplay) {
+                // Set initial value
+                valueDisplay.textContent = range.value;
+    
+                // Update on input
+                range.addEventListener('input', () => {
+                    valueDisplay.textContent = range.value;
+                });
+            }
+        });
+    </script>
 
     <!-- VERTEX SHADER -->
      <!-- Attributes concerning vertex position and sizes -->
@@ -51,10 +88,15 @@
         in vec4 a_position;
         in float a_point_size;
 
+        //For view, model, and projection transformations
+        uniform mat4 u_model_matrix;
+        uniform mat4 u_view_matrix;
+        uniform mat4 u_projection_matrix;
+
         //transformation matrix
         uniform mat4 u_transformation_matrix;
         void main() {
-        gl_Position = u_transformation_matrix * a_position;
+        gl_Position = u_transformation_matrix * u_view_matrix * u_model_matrix * u_projection_matrix * a_position;
         gl_PointSize = a_point_size;
         }
     </script>
@@ -88,7 +130,7 @@
     </script>
 
     <script>
-        function convertArrayToGLCoordinates(vertices, maxDimension) {
+        function convertArrayToGLCoordinates(vertices, z, maxDimension) {
             const glVertices = [];
 
             const scaling = maxDimension/480;
@@ -102,14 +144,10 @@
                 let glX = ((scaling * x) - halfDimension)/halfDimension;
                 let glY = (halfDimension - (scaling* y))/halfDimension; // Inverted Y-axis 
                 // console.log(glX,glY)
-                glVertices.push(glX, glY , 0, 1); // add z and w
+                glVertices.push(glX, glY , z, 1); // add z and w
             }
         
             return glVertices;
-        }
-
-        function convertGLCoordinatesTo3D(vertices, z){
-            const glVertices = [];
         }
 
         function multiplyMatrix(a,b){
@@ -353,7 +391,7 @@
                 //Render Fin 1
                 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -376,7 +414,7 @@
 
 
                 //Render Fin2
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -399,7 +437,7 @@
 
                 //Render Tatsugiri Body
                 
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,maxDimensionLength)),gl.STATIC_DRAW); 
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,0.5,maxDimensionLength)),gl.STATIC_DRAW); 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
 
@@ -422,7 +460,7 @@
                 //Render Flap
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -447,7 +485,7 @@
                 //Render Eye1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -471,7 +509,7 @@
                 //Render Iris1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -495,7 +533,7 @@
                 //Render IrisMid1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -519,7 +557,7 @@
                 //Render Eyelash1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -537,7 +575,7 @@
                 //Render Eye2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -560,7 +598,7 @@
                 //Render Iris2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -582,7 +620,7 @@
                 //Render IrisMid2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -604,7 +642,7 @@
                 //Render Eyelash2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -717,7 +755,7 @@
             //Render TATSUGIRI
 
             //Write data into the buffer object
-            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexTATSUGIRI,maxDimensionLength)),gl.STATIC_DRAW);
+            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexTATSUGIRI,0.5,maxDimensionLength)),gl.STATIC_DRAW);
             
             //Assign the buffer object to an attribute variable
             gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);

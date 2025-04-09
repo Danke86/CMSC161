@@ -82,6 +82,7 @@
         });
     </script>
 
+    <script src="./utils/gl-matrix.js"></script>
     <!-- VERTEX SHADER -->
      <!-- Attributes concerning vertex position and sizes -->
      <script id="vertex-shader" type="notjs">#version 300 es
@@ -95,6 +96,7 @@
 
         //transformation matrix
         uniform mat4 u_transformation_matrix;
+
         void main() {
         gl_Position = u_transformation_matrix * u_view_matrix * u_model_matrix * u_projection_matrix * a_position;
         gl_PointSize = a_point_size;
@@ -213,6 +215,11 @@
             const aPointSizePointer = gl.getAttribLocation(program, 'a_point_size');
             var colorLocation = gl.getUniformLocation(program, "u_color");
 
+            const uModelMatrixPointer = gl.getUniformLocation(program, 'u_model_matrix');
+            const uViewMatrixPointer = gl.getUniformLocation(program, 'u_view_matrix');
+            const uProjectionMatrixPointer = gl.getUniformLocation(program, 'u_projection_matrix');
+            
+
             //Used for affine transformation
             const uTransformationMatrixPointer = gl.getUniformLocation(program,'u_transformation_matrix');
             //Initializing the variables and transformation matrix
@@ -223,6 +230,28 @@
             0,0,1,0,
             0,0,0,1
             ];
+
+             // setup model matrix;
+            const modelMatrix = glMatrix.mat4.create();
+            
+
+            // setup view matrix
+            const viewMatrix = glMatrix.mat4.create();
+            
+            // setup projection matrix
+            const projectionMatrix = glMatrix.mat4.create();
+            // parameters to set parallel projection
+            var left = -1;
+            var right = 1;
+            var bottom = -1;
+            var top = 1;
+            var near = 0;
+            var far =1;
+
+            glMatrix.mat4.rotateZ(modelMatrix, modelMatrix, glMatrix.glMatrix.toRadian(0));
+            glMatrix.mat4.lookAt(viewMatrix,[0.3,0.3,-0.5,1],[0,0,0,1],[0,1,0,0]);
+            glMatrix.mat4.ortho(projectionMatrix, left, right, bottom, top, near, far);
+
 
             let n = 237 //number of vertices
             const maxDimensionLength = 960;
@@ -372,18 +401,27 @@
             279,278,279,300
             ]
 
-            //create a buffer object
-            shapeBuffer = gl.createBuffer();
+            
 
             function drawScene(){
                 console.log("Redrawing Scene")
+                
+                // enable attrib array  
+                gl.enableVertexAttribArray(aPositionPointer);
 
                 // clear the screen before drawing anything
                 gl.clearColor(1.0, 1.0, 1.0, 1.0); // white- RGBA
                 gl.clear(gl.COLOR_BUFFER_BIT); //execute - 
 
-            
+                // load uniforms (only done once; since values are same for all vertices)
+                gl.uniformMatrix4fv(uModelMatrixPointer, false, new Float32Array(modelMatrix));
+                gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix));
+                gl.uniformMatrix4fv(uProjectionMatrixPointer, false, new Float32Array(projectionMatrix));
+                // set values
                 gl.uniformMatrix4fv(uTransformationMatrixPointer, false, new Float32Array(transformationMatrix));
+
+                //create a buffer object
+                const shapeBuffer = gl.createBuffer();
 
                 //Bind buffer object to a target
                 gl.bindBuffer(gl.ARRAY_BUFFER,shapeBuffer);
@@ -391,12 +429,10 @@
                 //Render Fin 1
                 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 
@@ -414,12 +450,10 @@
 
 
                 //Render Fin2
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 
@@ -437,11 +471,10 @@
 
                 //Render Tatsugiri Body
                 
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,0.5,maxDimensionLength)),gl.STATIC_DRAW); 
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,0,maxDimensionLength)),gl.STATIC_DRAW); 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
 
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 
@@ -460,12 +493,10 @@
                 //Render Flap
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 
@@ -485,12 +516,10 @@
                 //Render Eye1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 
@@ -509,12 +538,10 @@
                 //Render Iris1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 
@@ -533,12 +560,10 @@
                 //Render IrisMid1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 
@@ -557,12 +582,10 @@
                 //Render Eyelash1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 gl.uniform4f(colorLocation,0.45,0.25,0.1,1.0);
@@ -575,12 +598,10 @@
                 //Render Eye2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 gl.vertexAttrib1f(aPointSizePointer, 5);
@@ -598,12 +619,10 @@
                 //Render Iris2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 gl.vertexAttrib1f(aPointSizePointer, 5);
@@ -620,12 +639,10 @@
                 //Render IrisMid2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 gl.vertexAttrib1f(aPointSizePointer, 5);
@@ -642,18 +659,276 @@
                 //Render Eyelash2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,0,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
-
-                gl.enableVertexAttribArray(aPositionPointer);
 
                 // draw buffer that is bound to gl.ARRAY_BUFFER
                 gl.uniform4f(colorLocation,0.45,0.25,0.1,1.0);
                 gl.vertexAttrib1f(aPointSizePointer, 5);
                 gl.drawArrays(gl.POINTS, 0, vertexEyeLash2.length/2);
                 gl.drawArrays(gl.LINE_STRIP, 0, vertexEyeLash2.length/2);
+
+
+
+
+                
+                //SHAPE 2
+                const shapeBuffer2 = gl.createBuffer();
+
+                //Bind buffer object to a target
+                gl.bindBuffer(gl.ARRAY_BUFFER,shapeBuffer);
+
+                //Render Fin 1
+                
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,0,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                
+                //Inner Fill
+                gl.uniform4f(colorLocation,95, 0.87, 0.42, 1.0); //Tatsugiri yellow darker 
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFin1.length/2);  
+                
+                //Draw outline
+                gl.uniform4f(colorLocation,1.0,0.5,0.7,1.0);
+                gl.drawArrays(gl.POINTS, 1, (vertexFin1.length/2)-1);
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFin1.length/2)-1);  
+
+
+
+                //Render Fin2
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,0,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                
+                //Inner Fill
+                gl.uniform4f(colorLocation,95, 0.87, 0.42, 1.0); //Tatsugiri yellow darker 
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFin2.length/2);  
+                
+                //Draw outline
+                gl.uniform4f(colorLocation,0.6,0.5,0.7,1.0);
+                gl.drawArrays(gl.POINTS, 1, (vertexFin2.length/2)-1);
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFin2.length/2)-1);  
+
+
+                //Render Tatsugiri Body
+                
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,0.25,maxDimensionLength)),gl.STATIC_DRAW); 
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Inner Fill
+                gl.uniform4f(colorLocation,1.0, 0.92, 0.47, 1.0); //Tatsugiri yellow  
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexBody.length/2);  
+                
+                //Draw outline
+                gl.uniform4f(colorLocation,0.0, 0.0, 0.0, 1.0); //Black
+                gl.drawArrays(gl.POINTS, 1, (vertexBody.length/2)-1);
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexBody.length/2)-1);  
+
+
+                //Render Flap
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Inner Fill
+                gl.uniform4f(colorLocation,1.0, 0.92, 0.47, 1.0); //Tatsugiri yellow  
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFlap.length/2);  
+
+                //Draw outline
+                gl.uniform4f(colorLocation,0.0,0.5,0.5,1.0);
+                gl.drawArrays(gl.POINTS, 1, (vertexFlap.length/2)-1);
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFlap.length/2)-1);  
+
+
+
+                //Render Eye1
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                //Inner Fill
+                gl.uniform4f(colorLocation,1.0, 1.0,1.0, 1.0);  
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexEye1.length/2);  
+
+                //Draw outline
+                gl.uniform4f(colorLocation,1.0,1.0,0.3,1.0); 
+                gl.drawArrays(gl.POINTS, 1, (vertexEye1.length/2)-1);
+                gl.drawArrays(gl.LINE_STRIP, 1, (vertexEye1.length/2)-1);
+
+
+
+                //Render Iris1
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                //Inner Fill
+                gl.uniform4f(colorLocation,0.0,0.0,0.0,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIris1.length/2);  
+
+                //Draw outline
+                gl.uniform4f(colorLocation,0.0,0.0,0.7,1.0); 
+                gl.drawArrays(gl.POINTS, 1, (vertexIris1.length/2)-1);
+                gl.drawArrays(gl.LINE_STRIP, 1, (vertexIris1.length/2)-1);
+
+
+
+                //Render IrisMid1
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Inner Fill
+                gl.uniform4f(colorLocation,1.0,1.0,1.0,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIrisMid1.length/2);  
+
+                //Draw outline
+                gl.uniform4f(colorLocation,0.1,1.0,1.0,1.0);
+                gl.drawArrays(gl.POINTS, 1, (vertexIrisMid1.length/2)-1);
+                gl.drawArrays(gl.LINE_STRIP, 1, (vertexIrisMid1.length/2)-1);
+
+
+                //Render Eyelash1
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                gl.uniform4f(colorLocation,0.45,0.25,0.1,1.0);
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                gl.drawArrays(gl.POINTS, 0, vertexEyeLash1.length/2);
+                gl.drawArrays(gl.LINE_STRIP, 0, vertexEyeLash1.length/2);
+
+
+
+                //Render Eye2
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                //Inner Fill
+                gl.uniform4f(colorLocation,1.0, 1.0,1.0, 1.0);  
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexEye2.length/2);  
+
+                //Draw outline
+                gl.uniform4f(colorLocation,1.0,1.0,0.3,1.0); 
+                gl.drawArrays(gl.POINTS, 1, (vertexEye2.length/2)-1);
+                gl.drawArrays(gl.LINE_STRIP, 1, (vertexEye2.length/2)-1);
+
+
+
+                //Render Iris2
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                //Inner Fill
+                gl.uniform4f(colorLocation,0.0,0.0,0.0,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIris2.length/2);  
+
+                //Draw outline
+                gl.uniform4f(colorLocation,0.0,0.0,0.7,1.0); 
+                gl.drawArrays(gl.POINTS, 1, (vertexIris2.length/2)-1);
+                gl.drawArrays(gl.LINE_STRIP, 1, (vertexIris2.length/2)-1);
+
+
+                //Render IrisMid2
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                //Inner Fill
+                gl.uniform4f(colorLocation,1.0,1.0,1.0,1.0);
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIrisMid2.length/2);  
+
+                //Draw outline
+                gl.uniform4f(colorLocation,0.1,1.0,1.0,1.0);
+                gl.drawArrays(gl.POINTS, 1, (vertexIrisMid2.length/2)-1);
+                gl.drawArrays(gl.LINE_STRIP, 1, (vertexIrisMid2.length/2)-1);
+
+
+                //Render Eyelash2
+
+                //Write data into the buffer object
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                
+                //Assign the buffer object to an attribute variable
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+
+                // draw buffer that is bound to gl.ARRAY_BUFFER
+                gl.uniform4f(colorLocation,0.45,0.25,0.1,1.0);
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+                gl.drawArrays(gl.POINTS, 0, vertexEyeLash2.length/2);
+                gl.drawArrays(gl.LINE_STRIP, 0, vertexEyeLash2.length/2);
+                
             }
             
             drawScene();
@@ -664,13 +939,13 @@
                     0,  0,  1, 0,
                     0,  0,  0, 1
             ]
-
+            /*
             let currentTranslateX = 0;
             let currentTranslateY = 0;
             let currentScaleX = 1;
             let currentScaleY = 1;
             let currentRotationAngle = 0;
-
+            */
             function redraw(code){
                 return function(){
                 //Declaration and initialization of translation,scaling,rotation factors
@@ -685,28 +960,69 @@
                 
                 // Check which button is choosen
                 if (code == "tx") {
-                    currentTranslateX += tr_x;
-                } else if (code == "ty") {
-                    currentTranslateY += tr_y;
-                } else if (code == "both") {
-                    currentTranslateX += tr_x;
-                    currentTranslateY += tr_y;
-                } else if (code == "scaled") {
-                    currentScaleX *= Sx;
-                    currentScaleY *= Sy;
-                } else if (code == "rotate") {
-                    currentRotationAngle += degrees;
-                }
+                    //currentTranslateX += tr_x;
+                    tr_x = parseFloat(document.getElementById("tx").value) || 0;
+                }if (code == "ty") {
+                    //currentTranslateY += tr_y;
+                    tr_y = parseFloat(document.getElementById("ty").value) || 0;
+                }if (code == "both") {
+                    //currentTranslateX += tr_x;
+                    //currentTranslateY += tr_y;
+                    tr_x = parseFloat(document.getElementById("tx").value) || 0;
+                    tr_y = parseFloat(document.getElementById("ty").value) || 0;
 
+                } 
+                if (code!="scaled"){
+                    transformationMatrix = [
+                    1,0,0,0,
+                    0,1,0,0,
+                    0,0,1,0,
+                    tr_x,tr_y,0,1
+                    ];
+                  }
+                if (code == "scaled") {
+                    //currentScaleX *= Sx;
+                    //currentScaleY *= Sy;
+                    Sx = parseFloat(document.getElementById("Sx").value) || 1;
+                    Sy = parseFloat(document.getElementById("Sy").value) || 1;
+
+                    // Scaling Matrix
+                    transformationMatrix = [
+                        Sx, 0,  0, 0,
+                        0, Sy,  0, 0,
+                        0,  0,  1, 0,
+                        0,  0,  0, 1
+                        ];
+
+                }
+                if (code == "rotate") {
+                    //currentRotationAngle += degrees;
+                    degrees = parseFloat(document.getElementById("angle").value) || 0;
+
+                    //For ROTATION
+                    let radians = Math.PI*degrees/180;
+                    let cosValue = Math.cos(radians);
+                    let sinValue = Math.sin(radians);
+
+                    // Rotation Matrix (about the origin)
+                    transformationMatrix = [
+                        cosValue, -sinValue, 0, 0,
+                        sinValue,  cosValue, 0, 0,
+                        0,         0,        1, 0,
+                        0,         0,        0, 1
+                    ];
+
+                }
+                /*
                 //For ROTATION
-                let radians = Math.PI*currentRotationAngle/180;
+                let radians = Math.PI*degrees/180;
                 let cosValue = Math.cos(radians);
                 let sinValue = Math.sin(radians);
 
                 // Scaling Matrix
                 let scaleMatrix = [
-                    currentScaleX, 0,  0, 0,
-                    0, currentScaleY,  0, 0,
+                    Sx, 0,  0, 0,
+                    0, Sy,  0, 0,
                     0,  0,  1, 0,
                     0,  0,  0, 1
                 ];
@@ -720,22 +1036,27 @@
                 ];
                 
                 // Translation Matrix
-                let translationMatrix = [
+           s     let translationMatrix = [
                     1, 0, 0, 0,
                     0, 1, 0, 0,
                     0, 0, 1, 0,
-                    currentTranslateX, currentTranslateY, 0, 1
+                    tr_x, tr_y, 0, 1
                 ];
-
+                */
                 // Combine transformations: Scaling → Rotation → Translation
                 //let currentTransformationMatrix = multiplyMatrix(multiplyMatrix(scaleMatrix, rotationMatrix),translationMatrix);
-                transformationMatrix = multiplyMatrix(multiplyMatrix(scaleMatrix, rotationMatrix),translationMatrix);
+                //let currentTransformationMatrix = multiplyMatrix(multiplyMatrix(scaleMatrix, rotationMatrix), translationMatrix);
+
+                transformationMatrix = multiplyMatrix(savedPositionMatrix, transformationMatrix);
+
+                //transformationMatrix = multiplyMatrix(multiplyMatrix(scaleMatrix, rotationMatrix),translationMatrix);
+                //transformationMatrix = multiplyMatrix(savedPositionMatrix, multiplyMatrix(scaleMatrix, multiplyMatrix(rotationMatrix, translationMatrix)));
 
                 savedPositionMatrix = transformationMatrix.slice()
 
-                console.log(scaleMatrix)
-                console.log(rotationMatrix)
-                console.log(translationMatrix)
+                //console.log(scaleMatrix)
+                //console.log(rotationMatrix)
+                //console.log(translationMatrix)
                 console.log(transformationMatrix)
 
                 
@@ -751,9 +1072,9 @@
             document.getElementById("scale").addEventListener("click",redraw("scaled"));
             document.getElementById("rotate").addEventListener("click",redraw("rotate"));
 
-            /*
-            //Render TATSUGIRI
+            /* //Render TATSUGIRI
 
+            
             //Write data into the buffer object
             gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexTATSUGIRI,0.5,maxDimensionLength)),gl.STATIC_DRAW);
             

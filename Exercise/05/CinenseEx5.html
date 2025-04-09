@@ -1012,51 +1012,28 @@
                         0,         0,        0, 1
                     ];
 
+                }  
+
+                if (code == "viewpoint"){
+
                 }
-                /*
-                //For ROTATION
-                let radians = Math.PI*degrees/180;
-                let cosValue = Math.cos(radians);
-                let sinValue = Math.sin(radians);
 
-                // Scaling Matrix
-                let scaleMatrix = [
-                    Sx, 0,  0, 0,
-                    0, Sy,  0, 0,
-                    0,  0,  1, 0,
-                    0,  0,  0, 1
-                ];
+                if (code == "centerpoint"){
+                    
+                }
 
-                // Rotation Matrix (about the origin)
-                let rotationMatrix = [
-                    cosValue, -sinValue, 0, 0,
-                    sinValue,  cosValue, 0, 0,
-                    0,         0,        1, 0,
-                    0,         0,        0, 1
-                ];
+                if (code == "upvector"){
+                    
+                }
+
                 
-                // Translation Matrix
-           s     let translationMatrix = [
-                    1, 0, 0, 0,
-                    0, 1, 0, 0,
-                    0, 0, 1, 0,
-                    tr_x, tr_y, 0, 1
-                ];
-                */
+                
+                
                 // Combine transformations: Scaling → Rotation → Translation
-                //let currentTransformationMatrix = multiplyMatrix(multiplyMatrix(scaleMatrix, rotationMatrix),translationMatrix);
-                //let currentTransformationMatrix = multiplyMatrix(multiplyMatrix(scaleMatrix, rotationMatrix), translationMatrix);
-
                 transformationMatrix = multiplyMatrix(savedPositionMatrix, transformationMatrix);
-
-                //transformationMatrix = multiplyMatrix(multiplyMatrix(scaleMatrix, rotationMatrix),translationMatrix);
-                //transformationMatrix = multiplyMatrix(savedPositionMatrix, multiplyMatrix(scaleMatrix, multiplyMatrix(rotationMatrix, translationMatrix)));
 
                 savedPositionMatrix = transformationMatrix.slice()
 
-                //console.log(scaleMatrix)
-                //console.log(rotationMatrix)
-                //console.log(translationMatrix)
                 console.log(transformationMatrix)
 
                 

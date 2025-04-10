@@ -1025,8 +1025,6 @@
                 if (code == "upvector"){
                     
                 }
-
-                
                 
                 
                 // Combine transformations: Scaling → Rotation → Translation
@@ -1048,6 +1046,22 @@
             document.getElementById("translate").addEventListener("click",redraw("both"));
             document.getElementById("scale").addEventListener("click",redraw("scaled"));
             document.getElementById("rotate").addEventListener("click",redraw("rotate"));
+            document.getElementById("")
+
+            const ranges = document.querySelectorAll('input[type="range"]');
+    
+                ranges.forEach(range => {
+                    const valueDisplay = document.getElementById(range.id + 'Value');
+                    if (valueDisplay) {
+                        // Set initial value
+                        valueDisplay.textContent = range.value;
+
+                        // Update on input
+                        range.addEventListener('input', () => {
+                            valueDisplay.textContent = range.value;
+                        });
+                    }
+                });
 
             /* //Render TATSUGIRI
 

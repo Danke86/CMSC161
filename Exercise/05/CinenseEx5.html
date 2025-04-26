@@ -35,11 +35,12 @@
         PROJECTION
     </div>
     <div>
+
         View Point:
         <br>
-        X = <input type="range" id="viewX" min="-1" max="1" value="0" step="0.01"> <span id="viewXValue">0.00</span>  |
-        Y = <input type="range" id="viewY" min="-1" max="1" value="0" step="0.01"> <span id="viewYValue">0.00</span> |
-        Z = <input type="range" id="viewZ" min="-1" max="1" value="0" step="0.01"> <span id="viewZValue">0.00</span>
+        X = <input type="range" id="viewX" min="-1" max="1" value="0.3" step="0.01"> <span id="viewXValue">0.00</span>  |
+        Y = <input type="range" id="viewY" min="-1" max="1" value="0.3" step="0.01"> <span id="viewYValue">0.00</span> |
+        Z = <input type="range" id="viewZ" min="-1" max="1" value="-0.5" step="0.01"> <span id="viewZValue">0.00</span>
         <br>
         Center Point:
         <br>
@@ -58,11 +59,11 @@
         <br>
         Left = <input type="text" id="Left" value="-1"> Right = <input type="text" id="Right" value="1">
         <br>
-        Top = <input type="text" id="Left" value="1"> Bottom = <input type="text" id="Right" value="-1">
+        Top = <input type="text" id="Top" value="1"> Bottom = <input type="text" id="Bottom" value="-1">
         <br>
-        Near = <input type="range" id="near" min="0.3" max="1" value="0.3" step="0.01"> <span id="nearValue">0.00</span> |
-        Far = <input type="range" id="far" min="1" max="2" value="1" step="0.01"> <span id="farValue">0.00</span> |
-        Angle = <input type="range" id="angleProject" min="0" max="180" value="90" step="0.01"> <span id="angleProjectValue">0.00</span>
+        Near = <input type="range" id="near" min="0" max="1" value="0.3" step="0.01"> <span id="nearValue">0.00</span> |
+        Far = <input type="range" id="far" min="1" max="50" value="1" step="0.01"> <span id="farValue">0.00</span> |
+        Angle = <input type="range" id="angleProject" min="60" max="180" value="90" step="0.01"> <span id="angleProjectValue">0.00</span>
     </div>
     
     <script>
@@ -239,17 +240,54 @@
             
             // setup projection matrix
             const projectionMatrix = glMatrix.mat4.create();
-            // parameters to set parallel projection
-            var left = -1;
-            var right = 1;
-            var bottom = -1;
-            var top = 1;
-            var near = 0;
-            var far = 1;
 
+            const aspect = canvas.clientWidth/canvas.clientHeight
+
+            // parameters to set parallel projection
+            var left = parseFloat(document.getElementById("Left").value);
+            var right = parseFloat(document.getElementById("Right").value);
+            var bottom = parseFloat(document.getElementById("Bottom").value);
+            var top = parseFloat(document.getElementById("Top").value);
+            var near = parseFloat(document.getElementById("near").value);
+            var far = parseFloat(document.getElementById("far").value);
+
+            var angleProject = parseFloat(document.getElementById("angleProject").value);
+
+            var viewX = parseFloat(document.getElementById("viewX").value);
+            var viewY = parseFloat(document.getElementById("viewY").value);
+            var viewZ = parseFloat(document.getElementById("viewZ").value);
+
+            var centerX = parseFloat(document.getElementById("centerX").value);
+            var centerY = parseFloat(document.getElementById("centerY").value);
+            var centerZ = parseFloat(document.getElementById("centerZ").value);
+
+            var upX = parseFloat(document.getElementById("upX").value);
+            var upY = parseFloat(document.getElementById("upY").value);
+            var upZ = parseFloat(document.getElementById("upZ").value);
+
+            var perspectiveToggle = document.getElementById("perspectiveToggle").checked
+
+            //debug
+            console.log(`Left: ${left}, Right: ${right}, Bottom: ${bottom}, Top: ${top}, Near: ${near}, Far: ${far}`)
+            console.log(`angleZ: ${angleProject}`)
+            console.log(`viewX: ${viewX}, viewY: ${viewY},viewZ: ${viewZ}`)
+            console.log(`centerX: ${centerX}, centerY: ${centerY}, centerY: ${centerY}`)
+            console.log(`upX: ${upX}, upY: ${upY}, upX: ${upY}`)
+            console.log(`perspectiveToggle: ${perspectiveToggle}`)
+
+            //manipulating the proejction
             glMatrix.mat4.rotateZ(modelMatrix, modelMatrix, glMatrix.glMatrix.toRadian(0));
-            glMatrix.mat4.lookAt(viewMatrix,[0.3,0.3,-0.5,1],[0,0,0,1],[0,1,0,0]);
-            glMatrix.mat4.ortho(projectionMatrix, left, right, bottom, top, near, far);
+            glMatrix.mat4.lookAt(viewMatrix, [viewX, viewY, viewZ], [centerX, centerY, centerZ], [upX, upY, upZ]);
+            
+            if (perspectiveToggle == true) {
+                //perspective
+                glMatrix.mat4.perspective(projectionMatrix, glMatrix.glMatrix.toRadian(angleProject),aspect, near, far);
+                
+            } else {
+                // Normal ortho
+                glMatrix.mat4.ortho(projectionMatrix, left, right, bottom, top, near, far);
+            }
+            
 
 
             let n = 237 //number of vertices
@@ -428,7 +466,7 @@
                 //Render Fin 1
                 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -449,7 +487,7 @@
 
 
                 //Render Fin2
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -470,7 +508,7 @@
 
                 //Render Tatsugiri Body
                 
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,0,maxDimensionLength)),gl.STATIC_DRAW); 
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,-0.25,maxDimensionLength)),gl.STATIC_DRAW); 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
 
@@ -492,7 +530,7 @@
                 //Render Flap
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -515,7 +553,7 @@
                 //Render Eye1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -537,7 +575,7 @@
                 //Render Iris1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -559,7 +597,7 @@
                 //Render IrisMid1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -581,7 +619,7 @@
                 //Render Eyelash1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -597,7 +635,7 @@
                 //Render Eye2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -618,7 +656,7 @@
                 //Render Iris2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -638,7 +676,7 @@
                 //Render IrisMid2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -658,7 +696,7 @@
                 //Render Eyelash2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -682,7 +720,7 @@
                 //Render Fin 1
                 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin1,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -703,7 +741,7 @@
 
 
                 //Render Fin2
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,0,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFin2,-0.25,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -724,7 +762,7 @@
 
                 //Render Tatsugiri Body
                 
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,0.25,maxDimensionLength)),gl.STATIC_DRAW); 
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBody,-0.35,maxDimensionLength)),gl.STATIC_DRAW); 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
 
@@ -745,7 +783,7 @@
                 //Render Flap
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexFlap,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -768,7 +806,7 @@
                 //Render Eye1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye1,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -791,7 +829,7 @@
                 //Render Iris1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris1,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -814,7 +852,7 @@
                 //Render IrisMid1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -837,7 +875,7 @@
                 //Render Eyelash1
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash1,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -854,7 +892,7 @@
                 //Render Eye2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEye2,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -875,7 +913,7 @@
                 //Render Iris2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIris2,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -896,7 +934,7 @@
                 //Render IrisMid2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -916,7 +954,7 @@
                 //Render Eyelash2
 
                 //Write data into the buffer object
-                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,0.25,maxDimensionLength)),gl.STATIC_DRAW);
+                gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexEyeLash2,-0.35,maxDimensionLength)),gl.STATIC_DRAW);
                 
                 //Assign the buffer object to an attribute variable
                 gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
@@ -929,7 +967,7 @@
                 gl.drawArrays(gl.LINE_STRIP, 0, vertexEyeLash2.length/2);
                 
             }
-            
+
             drawScene();
 
             let savedPositionMatrix = [
@@ -951,11 +989,11 @@
                 let tr_x=0, tr_y=0, Sx=1, Sy=1;
 
                 // Read transformation values from input fields
-                tr_x = parseFloat(document.getElementById("tx").value) || 0;
-                tr_y = parseFloat(document.getElementById("ty").value) || 0;
-                Sx = parseFloat(document.getElementById("Sx").value) || 1;
-                Sy = parseFloat(document.getElementById("Sy").value) || 1;
-                degrees = parseFloat(document.getElementById("angle").value) || 0;
+                //tr_x = parseFloat(document.getElementById("tx").value) || 0;
+                //tr_y = parseFloat(document.getElementById("ty").value) || 0;
+                //Sx = parseFloat(document.getElementById("Sx").value) || 1;
+                //Sy = parseFloat(document.getElementById("Sy").value) || 1;
+                //degrees = parseFloat(document.getElementById("angle").value) || 0;
                 
                 // Check which button is choosen
                 if (code == "tx") {
@@ -1015,6 +1053,51 @@
 
                 if (code == "projection"){
                     
+                    // parameters to set parallel projection
+                    left = parseFloat(document.getElementById("Left").value);
+                    right = parseFloat(document.getElementById("Right").value);
+                    bottom = parseFloat(document.getElementById("Bottom").value);
+                    top = parseFloat(document.getElementById("Top").value);
+                    near = parseFloat(document.getElementById("near").value);
+                    far = parseFloat(document.getElementById("far").value);
+
+                    angleProject = parseFloat(document.getElementById("angleProject").value);
+
+                    viewX = parseFloat(document.getElementById("viewX").value);
+                    viewY = parseFloat(document.getElementById("viewY").value);
+                    viewZ = parseFloat(document.getElementById("viewZ").value);
+
+                    centerX = parseFloat(document.getElementById("centerX").value);
+                    centerY = parseFloat(document.getElementById("centerY").value);
+                    centerZ = parseFloat(document.getElementById("centerZ").value);
+
+                    upX = parseFloat(document.getElementById("upX").value);
+                    upY = parseFloat(document.getElementById("upY").value);
+                    upZ = parseFloat(document.getElementById("upZ").value);
+
+                    perspectiveToggle = document.getElementById("perspectiveToggle").checked
+
+                    console.log(`Left: ${left}, Right: ${right}, Bottom: ${bottom}, Top: ${top}, Near: ${near}, Far: ${far}`)
+                    console.log(`angleZ: ${angleProject}`)
+                    console.log(`viewX: ${viewX}, viewY: ${viewY},viewZ: ${viewZ}`)
+                    console.log(`centerX: ${centerX}, centerY: ${centerY}, centerY: ${centerY}`)
+                    console.log(`upX: ${upX}, upY: ${upY}, upX: ${upY}`)
+                    console.log(`perspectiveToggle: ${perspectiveToggle}`)
+
+                    glMatrix.mat4.rotateZ(modelMatrix, modelMatrix, glMatrix.glMatrix.toRadian(0));
+                    //glMatrix.mat4.lookAt(viewMatrix,[viewX,viewY,viewZ,1],[centerX,centerY,centerZ,1],[upX,upY,upZ,0]);
+                    glMatrix.mat4.lookAt(viewMatrix, [viewX, viewY, viewZ], [centerX, centerY, centerZ], [upX, upY, upZ]);
+                    
+                    
+                    //checks if perspective or ortho
+                    if (perspectiveToggle == true) {
+                        //perspective
+                        glMatrix.mat4.perspective(projectionMatrix, glMatrix.glMatrix.toRadian(angleProject), aspect, near, far);
+                        
+                    } else {
+                        // Normal ortho
+                        glMatrix.mat4.ortho(projectionMatrix, left, right, bottom, top, near, far);
+                    }
                 }
                 
                 
@@ -1049,20 +1132,16 @@
             document.getElementById("upY").addEventListener("input",redraw("projection"));
             document.getElementById("upZ").addEventListener("input",redraw("projection"));
 
-            const ranges = document.querySelectorAll('input[type="range"]');
-    
-                ranges.forEach(range => {
-                    const valueDisplay = document.getElementById(range.id + 'Value');
-                    if (valueDisplay) {
-                        // Set initial value
-                        valueDisplay.textContent = range.value;
 
-                        // Update on input
-                        range.addEventListener('input', () => {
-                            valueDisplay.textContent = range.value;
-                        });
-                    }
-                });
+            document.getElementById("Top").addEventListener("input",redraw("projection"));
+            document.getElementById("Bottom").addEventListener("input",redraw("projection"));
+            document.getElementById("Left").addEventListener("input",redraw("projection"));
+            document.getElementById("Right").addEventListener("input",redraw("projection"));
+            document.getElementById("near").addEventListener("input",redraw("projection"));
+            document.getElementById("far").addEventListener("input",redraw("projection"));
+            document.getElementById("angleProject").addEventListener("input",redraw("projection"));
+            
+            document.getElementById("updateProjection").addEventListener("click", redraw("projection"))
 
             /* //Render TATSUGIRI
 

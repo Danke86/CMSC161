@@ -233,7 +233,6 @@
 
              // setup model matrix;
             const modelMatrix = glMatrix.mat4.create();
-            
 
             // setup view matrix
             const viewMatrix = glMatrix.mat4.create();
@@ -246,7 +245,7 @@
             var bottom = -1;
             var top = 1;
             var near = 0;
-            var far =1;
+            var far = 1;
 
             glMatrix.mat4.rotateZ(modelMatrix, modelMatrix, glMatrix.glMatrix.toRadian(0));
             glMatrix.mat4.lookAt(viewMatrix,[0.3,0.3,-0.5,1],[0,0,0,1],[0,1,0,0]);
@@ -1014,15 +1013,7 @@
 
                 }  
 
-                if (code == "viewpoint"){
-
-                }
-
-                if (code == "centerpoint"){
-                    
-                }
-
-                if (code == "upvector"){
+                if (code == "projection"){
                     
                 }
                 
@@ -1046,7 +1037,17 @@
             document.getElementById("translate").addEventListener("click",redraw("both"));
             document.getElementById("scale").addEventListener("click",redraw("scaled"));
             document.getElementById("rotate").addEventListener("click",redraw("rotate"));
-            document.getElementById("")
+
+            // add listeners upon update input ranges
+            document.getElementById("viewX").addEventListener("input",redraw("projection"));
+            document.getElementById("viewY").addEventListener("input",redraw("projection"));
+            document.getElementById("viewZ").addEventListener("input",redraw("projection"));
+            document.getElementById("centerX").addEventListener("input",redraw("projection"));
+            document.getElementById("centerY").addEventListener("input",redraw("projection"));
+            document.getElementById("centerZ").addEventListener("input",redraw("projection"));
+            document.getElementById("upX").addEventListener("input",redraw("projection"));
+            document.getElementById("upY").addEventListener("input",redraw("projection"));
+            document.getElementById("upZ").addEventListener("input",redraw("projection"));
 
             const ranges = document.querySelectorAll('input[type="range"]');
     

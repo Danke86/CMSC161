@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+    <html>
+<head>
+    <title>Cinense Exer 06-07</title>
+</head>
+<body>
+    <canvas id="output" width="960" height="960"></canvas>
+
+    <!-- USER INTERFACE -->
+    <div>
+        AFFINE TRANSFORMATION
+    </div>
+
+    <div>
+        <button id="translateX">MOVE X</button>
+        <button id="translateY">MOVE Y</button>
+        <button id="translate">MOVE</button>
+        <button id="scale">SCALE</button>
+        <button id="rotate">ROTATE</button>
+    </div>
+        
+    <div>
+        MOVE X BY = <input type="text" id="tx" value="0">
+        MOVE Y BY = <input type="text" id="ty" value="0">
+        SCALE X by = <input type="text" id="Sx" value="1">  
+        SCALE Y by = <input type="text" id="Sy" value="1">
+    </div>
+    <div>
+        ROTATE AT X = <input type="text" id="angleX" value="0">
+        ROTATE AT Y = <input type="text" id="angleY" value="0">
+        ANGLE OF ROTATION = <input type="text" id="angle" value="0">
+    </div>
+    <br>
+    <div>
+        PROJECTION
+    </div>
+    <div>
+
+        View Point:
+        <br>
+        X = <input type="range" id="viewX" min="-1" max="1" value="0.3" step="0.01"> <span id="viewXValue">0.00</span>  |
+        Y = <input type="range" id="viewY" min="-1" max="1" value="0.3" step="0.01"> <span id="viewYValue">0.00</span> |
+        Z = <input type="range" id="viewZ" min="-1" max="1" value="-0.5" step="0.01"> <span id="viewZValue">0.00</span>
+        <br>
+        Center Point:
+        <br>
+        X = <input type="range" id="centerX" min="-1" max="1" value="0" step="0.01"> <span id="centerXValue">0.00</span>|
+        Y = <input type="range" id="centerY" min="-1" max="1" value="0" step="0.01"> <span id="centerYValue">0.00</span>|
+        Z = <input type="range" id="centerZ" min="-1" max="1" value="0" step="0.01"> <span id="centerZValue">0.00</span>
+        <br>
+        Up Vector
+        <br>
+        X = <input type="range" id="upX" min="-1" max="1" value="0" step="0.01"> <span id="upXValue">0.00</span> |
+        Y = <input type="range" id="upY" min="-1" max="1" value="1" step="0.01"> <span id="upYValue">1.00</span> |
+        Z = <input type="range" id="upZ" min="-1" max="1" value="0" step="0.01"> <span id="upZValue">0.00</span>
+    </div>
+    <div>
+        <input type="checkbox" id="perspectiveToggle"> Perspective <button id="updateProjection">Update Projection</button>
+        <br>
+        Left = <input type="text" id="Left" value="-1"> Right = <input type="text" id="Right" value="1">
+        <br>
+        Top = <input type="text" id="Top" value="1"> Bottom = <input type="text" id="Bottom" value="-1">
+        <br>
+        Near = <input type="range" id="near" min="0" max="1" value="0.3" step="0.01"> <span id="nearValue">0.00</span> |
+        Far = <input type="range" id="far" min="1" max="50" value="1" step="0.01"> <span id="farValue">0.00</span> |
+        Angle = <input type="range" id="angleProject" min="60" max="180" value="90" step="0.01"> <span id="angleProjectValue">0.00</span>
+    </div>
+    <br>
+    <div>
+        <label for="colorDropdown">COLORS: </label>
+            <select id="colorDropdown" name="colors">
+            <option value="alphaBlending">Alpha Blending</option>
+            <option value="rgbBlending">RGB Blending</option>
+        </select>
+        <br>
+        <label for="sourceFactor">SOURCE BLENDING FACTOR: </label>
+        <select id="sourceFactor">
+            <option value="gl_ZERO">gl.ZERO</option>
+            <option value="gl_ONE">gl.ONE</option>
+            <option value="gl_SRC_COLOR">gl.SRC_COLOR</option>
+            <option value="gl_ONE_MINUS_SRC_COLOR">gl.ONE_MINUS_SRC_COLOR</option>
+            <option value="gl_DST_COLOR">gl.DST_COLOR</option>
+            <option value="gl_ONE_MINUS_DST_COLOR">gl.ONE_MINUS_DST_COLOR</option>
+            <option value="gl_SRC_ALPHA">gl.SRC_ALPHA</option>
+            <option value="gl_ONE_MINUS_SRC_ALPHA">gl.ONE_MINUS_SRC_ALPHA</option>
+            <option value="gl_DST_ALPHA">gl.DST_ALPHA</option>
+            <option value="gl_ONE_MINUS_DST_ALPHA">gl.ONE_MINUS_DST_ALPHA</option>
+            <option value="gl_CONSTANT_COLOR">gl.CONSTANT_COLOR</option>
+            <option value="gl_ONE_MINUS_CONSTANT_COLOR">gl.ONE_MINUS_CONSTANT_COLOR</option>
+            <option value="gl_CONSTANT_ALPHA">gl.CONSTANT_ALPHA</option>
+            <option value="gl_ONE_MINUS_CONSTANT_ALPHA">gl.ONE_MINUS_CONSTANT_ALPHA</option>
+            <option value="gl_SRC_ALPHA_SATURATE">gl.SRC_ALPHA_SATURATE</option>
+        </select>
+        <br>
+        <label for="dstFactor">DESTINATION BLENDING FACTOR: </label>
+        <select id="dstFactor">
+            <option value="gl_ZERO">gl.ZERO</option>
+            <option value="gl_ONE">gl.ONE</option>
+            <option value="gl_SRC_COLOR">gl.SRC_COLOR</option>
+            <option value="gl_ONE_MINUS_SRC_COLOR">gl.ONE_MINUS_SRC_COLOR</option>
+            <option value="gl_DST_COLOR">gl.DST_COLOR</option>
+            <option value="gl_ONE_MINUS_DST_COLOR">gl.ONE_MINUS_DST_COLOR</option>
+            <option value="gl_SRC_ALPHA">gl.SRC_ALPHA</option>
+            <option value="gl_ONE_MINUS_SRC_ALPHA">gl.ONE_MINUS_SRC_ALPHA</option>
+            <option value="gl_DST_ALPHA">gl.DST_ALPHA</option>
+            <option value="gl_ONE_MINUS_DST_ALPHA">gl.ONE_MINUS_DST_ALPHA</option>
+            <option value="gl_CONSTANT_COLOR">gl.CONSTANT_COLOR</option>
+            <option value="gl_ONE_MINUS_CONSTANT_COLOR">gl.ONE_MINUS_CONSTANT_COLOR</option>
+            <option value="gl_CONSTANT_ALPHA">gl.CONSTANT_ALPHA</option>
+            <option value="gl_ONE_MINUS_CONSTANT_ALPHA">gl.ONE_MINUS_CONSTANT_ALPHA</option>
+            <option value="gl_SRC_ALPHA_SATURATE">gl.SRC_ALPHA_SATURATE</option>
+        </select>
+        <br>
+        <label for="blendEq">EQUATION</label>
+        <select id="blendEq">
+            <option value="gl_FUNC_ADD">gl.FUNC_ADD</option>
+            <option value="gl_FUNC_SUBTRACT">gl.FUNC_SUBTRACT</option>
+        </select>
+        <br>
+        <button id="blendButton">BLEND </button>
+        <br>
+        <br>
+        Randomize Color:
+        <br> 
+        <button id="randomizeColorButton">VARY COLOR </button>
+
+        
+
+    </div>
+    
+    <script>
+        const ranges = document.querySelectorAll('input[type="range"]');
+    
+        ranges.forEach(range => {
+            const valueDisplay = document.getElementById(range.id + 'Value');
+            if (valueDisplay) {
+                // Set initial value
+                valueDisplay.textContent = range.value;
+    
+                // Update on input
+                range.addEventListener('input', () => {
+                    valueDisplay.textContent = range.value;
+                });
+            }
+        });
+    </script>
+
+    <script src="./utils/gl-matrix.js"></script>
+    <!-- VERTEX SHADER -->
+     <!-- Attributes concerning vertex position and sizes -->
+     <script id="vertex-shader" type="notjs">#version 300 es
+        in vec4 a_position;
+        in float a_point_size;
+
+        in vec4 a_color;//attribute vec4 a_color;
+        out vec4 v_color;//varying vec4 v_color;
+
+        //For view, model, and projection transformations
+        uniform mat4 u_model_matrix;
+        uniform mat4 u_view_matrix;
+        uniform mat4 u_projection_matrix;
+
+        //transformation matrix
+        uniform mat4 u_transformation_matrix;
+
+        
+
+        void main() {
+            gl_Position = u_transformation_matrix * u_view_matrix * u_model_matrix * u_projection_matrix * a_position;
+            gl_PointSize = a_point_size;
+            v_color = a_color;
+        }
+    </script>
+    
+    <!-- FRAGMENT SHADER -->
+     <!-- COLORING -->
+    <script id="fragment-shader" type="notjs">#version 300 es
+        precision mediump float;
+        
+        //uniform vec4 u_color;
+        
+        in vec4 v_color;//varying vec4 v_color;
+        out vec4 outColor;
+
+        void main() {
+            //outColor = u_color;
+            outColor = v_color;
+        }
+    </script>
+
+    <!-- Function for creating and compiling shader programs -->
+    <script>
+        function createShader (gl, type, sourceCode) {
+        // Compiles either a shader of type gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
+        var shader = gl.createShader( type );
+        gl.shaderSource( shader, sourceCode );
+        gl.compileShader( shader );
+        if ( !gl.getShaderParameter(shader, gl.COMPILE_STATUS) ) {
+            var info = gl.getShaderInfoLog( shader );
+            throw 'Could not compile WebGL program. \n\n' + info;
+        }
+        return shader;
+        }
+    </script>
+
+    <script>
+        function convertArrayToGLCoordinates(vertices, z, maxDimension) {
+            const glVertices = [];
+
+            const scaling = maxDimension/480;
+            const halfDimension = maxDimension/2;
+            
+            for (let i = 0; i < vertices.length; i += 2) {
+                let x = vertices[i];
+                let y = vertices[i + 1];
+                // console.log(x,y)
+                // Normalize to WebGL space (-1 to 1)
+                let glX = ((scaling * x) - halfDimension)/halfDimension;
+                let glY = (halfDimension - (scaling* y))/halfDimension; // Inverted Y-axis 
+                // console.log(glX,glY)
+                glVertices.push(glX, glY , z, 1); // add z and w
+            }
+        
+            return glVertices;
+        }
+
+
+        //generate random colors
+        function generateRandomColors(numVertices) {
+            let colors = [];
+            for (let i = 0; i < numVertices; i++) {
+                colors.push(Math.random()); // R
+                colors.push(Math.random()); // G
+                colors.push(Math.random()); // B
+                colors.push(1.0);            // A (alpha = 1, fully opaque)
+            }
+            return colors;
+        }
+
+        function multiplyMatrix(a,b){
+            let result = Array(16).fill(0);
+            //console.log(result)
+            //console.log("a: " + a)
+            //console.log(b)
+            for(let i = 0; i < 4; i++){
+                for(let j = 0; j < 4; j++){
+                    let sum = 0;
+                    for (let k = 0; k < 4;k++){
+                        sum += a[(i * 4) + k] * b[(k * 4) + j];
+                    }
+                    result[(i * 4) + j] = sum;  
+                }
+            }
+            return result
+        }
+
+        function main(){
+            const canvas = document.querySelector('#output');
+            if(!canvas){
+                console.log("Canvas element with specified ID ('output') cannot be found.");
+            }
+
+            //Setting up the WebGL Context
+            const gl = canvas.getContext('webgl2');
+
+            // getting the source code from the file
+            const vertexShaderSource =
+            document.querySelector('#vertex-shader').text;
+            const fragmentShaderSource =
+            document.querySelector('#fragment-shader').text;
+
+            // function call to createShader; the return value is captured
+            // by vertexShader and fragmentShader
+            const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
+            const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
+
+            //Creation and initialization of GL program
+            var program = gl.createProgram();
+
+            // Attach pre-existing shaders
+            gl.attachShader(program, vertexShader);
+            gl.attachShader(program, fragmentShader);
+
+            gl.linkProgram(program);
+            
+            if ( !gl.getProgramParameter( program, gl.LINK_STATUS) ) {
+                var info = gl.getProgramInfoLog(program);
+                throw 'Could not compile WebGL program. \n\n' + info;
+            }
+
+            // set the program created earlier
+            gl.useProgram(program);
+
+            // clear the screen before drawing anything
+            gl.clearColor(1.0, 1.0, 1.0, 1.0); // white- RGBA
+            gl.clear(gl.COLOR_BUFFER_BIT); //execute - 
+
+            // Declaration of pointers to the attributes
+            const aPositionPointer = gl.getAttribLocation(program, 'a_position');
+            const aPointSizePointer = gl.getAttribLocation(program, 'a_point_size');
+            var colorLocation = gl.getAttribLocation(program, "a_color");
+
+            const uModelMatrixPointer = gl.getUniformLocation(program, 'u_model_matrix');
+            const uViewMatrixPointer = gl.getUniformLocation(program, 'u_view_matrix');
+            const uProjectionMatrixPointer = gl.getUniformLocation(program, 'u_projection_matrix');
+            
+
+            //Used for affine transformation
+            const uTransformationMatrixPointer = gl.getUniformLocation(program,'u_transformation_matrix');
+            //Initializing the variables and transformation matrix
+            let tx=0, ty=0;
+            let transformationMatrix = [ //Identity Matrix
+            1,0,0,0,
+            0,1,0,0,
+            0,0,1,0,
+            0,0,0,1
+            ];
+
+             // setup model matrix;
+            const modelMatrix = glMatrix.mat4.create();
+
+            // setup view matrix
+            const viewMatrix = glMatrix.mat4.create();
+            
+            // setup projection matrix
+            const projectionMatrix = glMatrix.mat4.create();
+
+            const aspect = canvas.clientWidth/canvas.clientHeight
+
+            // parameters to set parallel projection
+            var left = parseFloat(document.getElementById("Left").value);
+            var right = parseFloat(document.getElementById("Right").value);
+            var bottom = parseFloat(document.getElementById("Bottom").value);
+            var top = parseFloat(document.getElementById("Top").value);
+            var near = parseFloat(document.getElementById("near").value);
+            var far = parseFloat(document.getElementById("far").value);
+
+            var angleProject = parseFloat(document.getElementById("angleProject").value);
+
+            var viewX = parseFloat(document.getElementById("viewX").value);
+            var viewY = parseFloat(document.getElementById("viewY").value);
+            var viewZ = parseFloat(document.getElementById("viewZ").value);
+
+            var centerX = parseFloat(document.getElementById("centerX").value);
+            var centerY = parseFloat(document.getElementById("centerY").value);
+            var centerZ = parseFloat(document.getElementById("centerZ").value);
+
+            var upX = parseFloat(document.getElementById("upX").value);
+            var upY = parseFloat(document.getElementById("upY").value);
+            var upZ = parseFloat(document.getElementById("upZ").value);
+
+            var perspectiveToggle = document.getElementById("perspectiveToggle").checked
+
+            //debug
+            console.log(`Left: ${left}, Right: ${right}, Bottom: ${bottom}, Top: ${top}, Near: ${near}, Far: ${far}`)
+            console.log(`angleZ: ${angleProject}`)
+            console.log(`viewX: ${viewX}, viewY: ${viewY},viewZ: ${viewZ}`)
+            console.log(`centerX: ${centerX}, centerY: ${centerY}, centerY: ${centerY}`)
+            console.log(`upX: ${upX}, upY: ${upY}, upX: ${upY}`)
+            console.log(`perspectiveToggle: ${perspectiveToggle}`)
+
+            //manipulating the proejction
+            glMatrix.mat4.rotateZ(modelMatrix, modelMatrix, glMatrix.glMatrix.toRadian(0));
+            glMatrix.mat4.lookAt(viewMatrix, [viewX, viewY, viewZ], [centerX, centerY, centerZ], [upX, upY, upZ]);
+            
+            if (perspectiveToggle == true) {
+                //perspective
+                glMatrix.mat4.perspective(projectionMatrix, glMatrix.glMatrix.toRadian(angleProject),aspect, near, far);
+                
+            } else {
+                // Normal ortho
+                glMatrix.mat4.ortho(projectionMatrix, left, right, bottom, top, near, far);
+            }
+            
+
+
+            let n = 237 //number of vertices
+            const maxDimensionLength = 960;
+
+            const enableOutline = true; //enable outline
+            const enablePoints = true; //enable points
+
+            //every 2 integers = 1 coordinate
+            
+            const vertexBody = [
+                //Fan point
+                100,219,    
+
+                119,233,110,231,100,229,94,231,85,233,76,
+                233,64,233,51,233,40,233,31,233,26,228,21,225,18,220,22,
+                216,28,214,41,212,51,211,66,211,75,209,84,209,94,210,109,
+                206,118,203,130,200,144,196,156,192,178,188,201,183,223,179,
+                246,175,273,171,299,168,324,166,348,164,358,164,374,164,394,
+                164,404,165,413,166,426,170,439,176,449,183,455,190,459,197,
+                462,206,463,216,462,225,458,234,452,243,447,249,439,254,431,
+                258,421,261,411,263,377,263,355,262,330,261,309,260,
+                292,258,266,255,244,252,234,250,
+
+                //Last point
+                119,233
+            ];
+            var colorBody = []
+            console.log(colorBody)
+            const vertexFlap = [
+            //Fan point
+            260,234,   
+
+            261,222,250,220,237,217,213,212,190,207,
+            172,204,156,202,149,203,142,205,136,208,130,213,126,220,126,
+            227,128,234,132,239,137,244,143,248,152,251,162,253,171,254,
+            181,254,192,254,205,253,218,251,229,249,239,248,248,247,258,245,
+            
+            //Last point
+            261,222
+
+            ]
+            var colorFlap = []
+            const vertexFin1 = [
+            //Fan point
+            94,204, 
+
+            78,204,86,201,95,199,104,198,113,199,
+            118,203,109,206,94,210,84,209,75,209,
+            
+            //Last point
+            78,204
+            ]
+            var colorFin1 = []
+            const vertexFin2 = [
+            //Fan point
+            270,169, 
+
+            169,179,179,171,191,165,206,163,218,164,230,166,244,166,255,
+            164,264,161,273,157,282,153,291,149,301,146,312,145,325,148,336,151,347,157,
+            358,164,348,164,324,166,299,168,273,171,246,175,223,179,201,183,178,188,156,192,
+
+            //Last point
+            169,179
+            ]
+            var colorFin2 = []
+
+            const vertexEyeLash1 = [365,208,369,210,375,212,381,213,387,214,393,215,398,215,404,214,408,213]
+            const vertexEye1 = [
+            //Fan point
+            385,225, 
+
+            369,210,375,212,381,213,387,214,393,215,398,215,404,214,
+            405,220,404,226,401,234,392,236,386,236,378,235,370,232,368,220,
+            
+            //Last point
+            369,210
+            ]
+            var colorEye1 = []
+            const vertexIris1 = [
+            //Fan point
+            381,224, 
+
+            369,210,375,212,381,213,387,214,393,215,
+            391,221,389,230,386,236,378,235,370,232,368,220,
+            //Last point
+            369,210
+            ]
+            var colorIris1 = []
+            const vertexIrisMid1 = [
+            //Fan point
+            378,219,
+
+            375,212,381,213,381,224,378,230,374,224,374,218,
+            //Last point
+            375,212
+            ]
+            var colorIrisMid1 = []
+
+            const vertexEyeLash2 = [431,210,437,208,442,206,447,204,452,201,456,198]
+            const vertexEye2 = [
+            //Fan point
+            445,215, 
+
+            431,210,437,208,442,206,447,204,452,201,456,198,
+            457,206,457,212,457,218,449,224,443,227,437,228,434,223,432,218,
+            
+            //Last point
+            431,210
+            ]
+            var colorEye2 = []
+            const vertexIris2 = [
+            //Fan point
+            442,216, 
+            
+            431,210,437,208,442,206,447,204,449,209,449,216,449,224,443,227,437,228,434,223,432,218,
+
+            //Last point
+            431,210
+            ]
+            var colorIris2 = []
+            const vertexIrisMid2 = [
+            //Fan point
+            439,213, 
+
+            437,208,442,206,442,216,440,221,437,216,
+            
+            //Last point
+            437,208
+            ]    
+            var colorIrisMid2 = []
+            //Pokemon Name Vertices
+            const vertexT1 = [51,278,80,278,65,278,65,300]
+            const vertexA = [85,300,95,278,105,300,101,290,89,290]
+            const vertexT2 = [110,278,139,278,124,278,124,300]
+            const vertexS = [173,278,149,278,149,289,173,289,173,300,149,300]
+            const vertexU = [181,278,181,300,201,300,201,278]
+            const vertexG = [233,278,212,278,212,300,233,300,233,289,222,289]
+            const vertexI1 = [244,278,244,300]
+            const vertexR1 = [254,300,254,278,271,283,254,290,271,300]
+            const vertexI2 = [279,278,279,300]
+
+            const vertexTATSUGIRI = [
+            51,278,80,278,65,278,65,300,
+            85,300,95,278,105,300,101,290,89,290,
+            110,278,139,278,124,278,124,300,
+            173,278,149,278,149,289,173,289,173,300,149,300,
+            181,278,181,300,201,300,201,278,
+            233,278,212,278,212,300,233,300,233,289,222,289,
+            244,278,244,300,
+            254,300,254,278,271,283,254,290,271,300,
+            279,278,279,300
+            ]
+
+            const vertexBox = [
+                124,144,
+                380,144,
+                380,300,
+                124,300
+            ]
+
+            function generateRandomColorsAllVertex(){
+                colorBody = generateRandomColors(vertexBody.length/2)
+                colorFlap = generateRandomColors(vertexFlap.length/2)
+                colorFin1 = generateRandomColors(vertexFin1.length/2)
+                colorFin2 = generateRandomColors(vertexFin2.length/2)
+
+                colorEye1 = generateRandomColors(vertexEye1.length/2)
+                colorIris1 = generateRandomColors(vertexIris1.length/2)
+                colorIrisMid1 = generateRandomColors(vertexIrisMid1.length/2)
+
+                colorEye2 = generateRandomColors(vertexEye2.length/2)
+                colorIris2 = generateRandomColors(vertexIris2.length/2)
+                colorIrisMid2 = generateRandomColors(vertexIrisMid2.length/2)
+            }
+
+            generateRandomColorsAllVertex();
+
+            function drawScene(){
+                console.log("Redrawing Scene")
+                gl.enable(gl.DEPTH_TEST);
+                // enable attrib array  
+                gl.enableVertexAttribArray(aPositionPointer);
+                gl.enableVertexAttribArray(colorLocation);
+
+                // clear the screen before drawing anything
+                gl.clearColor(0, 0, 0,   1.0); // white- RGBA
+                gl.clear(gl.COLOR_BUFFER_BIT); //execute - 
+
+                // load uniforms (only done once; since values are same for all vertices)
+                gl.uniformMatrix4fv(uModelMatrixPointer, false, new Float32Array(modelMatrix));
+                gl.uniformMatrix4fv(uViewMatrixPointer, false, new Float32Array(viewMatrix));
+                gl.uniformMatrix4fv(uProjectionMatrixPointer, false, new Float32Array(projectionMatrix));
+                // set values
+                gl.uniformMatrix4fv(uTransformationMatrixPointer, false, new Float32Array(transformationMatrix));
+
+                //create a buffer object
+                const shapeBuffer = gl.createBuffer();
+                const colorBuffer = gl.createBuffer();
+
+                //Render Fin 1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexFin1, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorFin1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFin1.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFin1.length/2)-1);  
+
+                
+
+                //Render Fin2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexFin2, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorFin2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFin2.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFin2.length/2)-1); 
+
+
+                //Render Tatsugiri Body
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexBody, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorBody), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexBody.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexBody.length/2)-1); 
+
+
+                //Render Flap
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexFlap, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorFlap), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFlap.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFlap.length/2)-1); 
+
+
+                //Render Eye1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexEye1, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorEye1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexEye1.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexEye1.length/2)-1); 
+
+
+
+                //Render Iris1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIris1, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIris1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIris1.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIris1.length/2)-1); 
+
+
+
+
+                //Render IrisMid1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIrisMid1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIrisMid1.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIrisMid1.length/2)-1); 
+
+                //Render Eye2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexEye2, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorEye2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexEye2.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexEye2.length/2)-1); 
+
+
+
+                //Render Iris2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIris2, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIris2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIris2.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIris2.length/2)-1); 
+
+
+
+
+                //Render IrisMid2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2, -0.25, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIrisMid2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIrisMid2.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIrisMid2.length/2)-1); 
+
+
+
+                
+                //SHAPE 2
+               //create a buffer object
+                const shapeBuffer2 = gl.createBuffer();
+                const colorBuffer2 = gl.createBuffer();
+
+                //Render Fin 1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexFin1, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorFin1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFin1.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFin1.length/2)-1);  
+
+                
+
+                //Render Fin2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexFin2, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorFin2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFin2.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFin2.length/2)-1); 
+
+
+                //Render Tatsugiri Body
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexBody, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorBody), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexBody.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexBody.length/2)-1); 
+
+
+                //Render Flap
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexFlap, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorFlap), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexFlap.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexFlap.length/2)-1); 
+
+
+                //Render Eye1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexEye1, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorEye1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexEye1.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexEye1.length/2)-1); 
+
+
+
+                //Render Iris1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIris1, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIris1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIris1.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIris1.length/2)-1); 
+
+
+
+
+                //Render IrisMid1
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIrisMid1, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIrisMid1), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIrisMid1.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIrisMid1.length/2)-1); 
+
+                //Render Eye2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexEye2, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+                
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorEye2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexEye2.length/2);  
+                
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexEye2.length/2)-1); 
+
+
+
+                //Render Iris2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIris2, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIris2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIris2.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIris2.length/2)-1); 
+
+
+
+
+                //Render IrisMid2
+                //Position
+                gl.bindBuffer(gl.ARRAY_BUFFER, shapeBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(convertArrayToGLCoordinates(vertexIrisMid2, -0.35, maxDimensionLength)), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer, 4, gl.FLOAT, false, 0, 0);
+
+                //Color
+                gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer2);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colorIrisMid2), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(colorLocation, 4, gl.FLOAT, false, 0, 0);
+
+                //Point size
+                gl.vertexAttrib1f(aPointSizePointer, 5);
+
+                //Draw
+                gl.drawArrays(gl.TRIANGLE_FAN, 0, vertexIrisMid2.length/2);  
+
+                //Draw outline
+                gl.drawArrays(gl.LINE_LOOP, 1, (vertexIrisMid2.length/2)-1); 
+
+
+                //Render Box
+                //gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexBox,-0.45,maxDimensionLength)),gl.STATIC_DRAW);
+                //gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                //gl.uniform4f(colorLocation,0.45,0.25,0.1,1.0);  
+
+                
+            }
+
+            drawScene();
+
+            let savedPositionMatrix = [
+                    1,  0,  0, 0,
+                    0,  1,  0, 0,
+                    0,  0,  1, 0,
+                    0,  0,  0, 1
+            ]
+            /*
+            let currentTranslateX = 0;
+            let currentTranslateY = 0;
+            let currentScaleX = 1;
+            let currentScaleY = 1;
+            let currentRotationAngle = 0;
+            */
+            function redraw(code){
+                return function(){
+                //Declaration and initialization of translation,scaling,rotation factors
+                let tr_x=0, tr_y=0, Sx=1, Sy=1;
+
+                // Read transformation values from input fields
+                //tr_x = parseFloat(document.getElementById("tx").value) || 0;
+                //tr_y = parseFloat(document.getElementById("ty").value) || 0;
+                //Sx = parseFloat(document.getElementById("Sx").value) || 1;
+                //Sy = parseFloat(document.getElementById("Sy").value) || 1;
+                //degrees = parseFloat(document.getElementById("angle").value) || 0;
+                
+                // Check which button is choosen
+                if (code == "tx") {
+                    //currentTranslateX += tr_x;
+                    tr_x = parseFloat(document.getElementById("tx").value) || 0;
+                }if (code == "ty") {
+                    //currentTranslateY += tr_y;
+                    tr_y = parseFloat(document.getElementById("ty").value) || 0;
+                }if (code == "both") {
+                    //currentTranslateX += tr_x;
+                    //currentTranslateY += tr_y;
+                    tr_x = parseFloat(document.getElementById("tx").value) || 0;
+                    tr_y = parseFloat(document.getElementById("ty").value) || 0;
+
+                } 
+                if (code!="scaled"){
+                    transformationMatrix = [
+                    1,0,0,0,
+                    0,1,0,0,
+                    0,0,1,0,
+                    tr_x,tr_y,0,1
+                    ];
+                  }
+                if (code == "scaled") {
+                    //currentScaleX *= Sx;
+                    //currentScaleY *= Sy;
+                    Sx = parseFloat(document.getElementById("Sx").value) || 1;
+                    Sy = parseFloat(document.getElementById("Sy").value) || 1;
+
+                    // Scaling Matrix
+                    transformationMatrix = [
+                        Sx, 0,  0, 0,
+                        0, Sy,  0, 0,
+                        0,  0,  1, 0,
+                        0,  0,  0, 1
+                        ];
+
+                }
+                if (code == "rotate") {
+                    //currentRotationAngle += degrees;
+                    degrees = parseFloat(document.getElementById("angle").value) || 0;
+
+                    //For ROTATION
+                    let radians = Math.PI*degrees/180;
+                    let cosValue = Math.cos(radians);
+                    let sinValue = Math.sin(radians);
+
+                    // Rotation Matrix (about the origin)
+                    transformationMatrix = [
+                        cosValue, -sinValue, 0, 0,
+                        sinValue,  cosValue, 0, 0,
+                        0,         0,        1, 0,
+                        0,         0,        0, 1
+                    ];
+
+                }  
+
+                if (code == "projection"){
+                    
+                    // parameters to set parallel projection
+                    left = parseFloat(document.getElementById("Left").value);
+                    right = parseFloat(document.getElementById("Right").value);
+                    bottom = parseFloat(document.getElementById("Bottom").value);
+                    top = parseFloat(document.getElementById("Top").value);
+                    near = parseFloat(document.getElementById("near").value);
+                    far = parseFloat(document.getElementById("far").value);
+
+                    angleProject = parseFloat(document.getElementById("angleProject").value);
+
+                    viewX = parseFloat(document.getElementById("viewX").value);
+                    viewY = parseFloat(document.getElementById("viewY").value);
+                    viewZ = parseFloat(document.getElementById("viewZ").value);
+
+                    centerX = parseFloat(document.getElementById("centerX").value);
+                    centerY = parseFloat(document.getElementById("centerY").value);
+                    centerZ = parseFloat(document.getElementById("centerZ").value);
+
+                    upX = parseFloat(document.getElementById("upX").value);
+                    upY = parseFloat(document.getElementById("upY").value);
+                    upZ = parseFloat(document.getElementById("upZ").value);
+
+                    perspectiveToggle = document.getElementById("perspectiveToggle").checked
+
+                    console.log(`Left: ${left}, Right: ${right}, Bottom: ${bottom}, Top: ${top}, Near: ${near}, Far: ${far}`)
+                    console.log(`angleZ: ${angleProject}`)
+                    console.log(`viewX: ${viewX}, viewY: ${viewY},viewZ: ${viewZ}`)
+                    console.log(`centerX: ${centerX}, centerY: ${centerY}, centerY: ${centerY}`)
+                    console.log(`upX: ${upX}, upY: ${upY}, upX: ${upY}`)
+                    console.log(`perspectiveToggle: ${perspectiveToggle}`)
+
+                    glMatrix.mat4.rotateZ(modelMatrix, modelMatrix, glMatrix.glMatrix.toRadian(0));
+                    //glMatrix.mat4.lookAt(viewMatrix,[viewX,viewY,viewZ,1],[centerX,centerY,centerZ,1],[upX,upY,upZ,0]);
+                    glMatrix.mat4.lookAt(viewMatrix, [viewX, viewY, viewZ], [centerX, centerY, centerZ], [upX, upY, upZ]);
+                    
+                    
+                    //checks if perspective or ortho
+                    if (perspectiveToggle == true) {
+                        //perspective
+                        glMatrix.mat4.perspective(projectionMatrix, glMatrix.glMatrix.toRadian(angleProject), aspect, near, far);
+                        
+                    } else {
+                        // Normal ortho
+                        glMatrix.mat4.ortho(projectionMatrix, left, right, bottom, top, near, far);
+                    }
+                }
+
+                if (code == "color"){
+                    // Disable depth testing while blending
+                    gl.disable(gl.DEPTH_TEST);
+
+                    // Enable blending
+                    gl.enable(gl.BLEND);
+
+                    //check if Alpha blending or RGB blending
+                    const blendType = document.getElementById("colorDropdown").value
+
+                    // Get selected values
+                    const sourceFactorStr = document.getElementById("sourceFactor").value;
+                    const dstFactorStr = document.getElementById("dstFactor").value;
+                    const blendEqStr = document.getElementById("blendEq").value;
+
+                    // Convert string like "gl_SRC_ALPHA" to actual gl constant
+                    const sourceFactor = gl[sourceFactorStr.replace("gl_", "")];
+                    const dstFactor = gl[dstFactorStr.replace("gl_", "")];
+                    const blendEq = gl[blendEqStr.replace("gl_", "")];
+
+                    if (blendType == "alphaBlending"){
+                        gl.blendFunc(sourceFactor,dstFactor);
+                        gl.blendEquation(blendEq);
+                    }else if (blendType == "rgbBlending"){
+                        gl.blendFuncSeparate(sourceFactor, dstFactor, gl.ONE, gl.ONE);
+                    }else{
+                        console.log("Unknown Blend Type")
+                    }
+
+                    console.log("Blending updated:", sourceFactorStr, dstFactorStr, blendEqStr);
+                    console.log("Blending updated:", sourceFactor, dstFactor, blendEq);
+
+                    gl.enable(gl.DEPTH_TEST);
+
+                }
+
+                
+
+                if (code == "randomizecolor"){
+                    generateRandomColorsAllVertex();
+                }
+                
+                
+                // Combine transformations: Scaling → Rotation → Translation
+                transformationMatrix = multiplyMatrix(savedPositionMatrix, transformationMatrix);
+
+                savedPositionMatrix = transformationMatrix.slice()
+
+                console.log(transformationMatrix)
+
+                
+                //rendering again after reflecting the transformations
+                drawScene();
+                }
+            }
+
+            //Event listeners for user inputs for the transformations
+            document.getElementById("translateX").addEventListener("click",redraw("tx"));
+            document.getElementById("translateY").addEventListener("click",redraw("ty"));
+            document.getElementById("translate").addEventListener("click",redraw("both"));
+            document.getElementById("scale").addEventListener("click",redraw("scaled"));
+            document.getElementById("rotate").addEventListener("click",redraw("rotate"));
+
+            // add listeners upon update input ranges
+            document.getElementById("viewX").addEventListener("input",redraw("projection"));
+            document.getElementById("viewY").addEventListener("input",redraw("projection"));
+            document.getElementById("viewZ").addEventListener("input",redraw("projection"));
+            document.getElementById("centerX").addEventListener("input",redraw("projection"));
+            document.getElementById("centerY").addEventListener("input",redraw("projection"));
+            document.getElementById("centerZ").addEventListener("input",redraw("projection"));
+            document.getElementById("upX").addEventListener("input",redraw("projection"));
+            document.getElementById("upY").addEventListener("input",redraw("projection"));
+            document.getElementById("upZ").addEventListener("input",redraw("projection"));
+
+
+            document.getElementById("Top").addEventListener("input",redraw("projection"));
+            document.getElementById("Bottom").addEventListener("input",redraw("projection"));
+            document.getElementById("Left").addEventListener("input",redraw("projection"));
+            document.getElementById("Right").addEventListener("input",redraw("projection"));
+            document.getElementById("near").addEventListener("input",redraw("projection"));
+            document.getElementById("far").addEventListener("input",redraw("projection"));
+            document.getElementById("angleProject").addEventListener("input",redraw("projection"));
+            
+            document.getElementById("updateProjection").addEventListener("click", redraw("projection"))
+
+            document.getElementById("blendButton").addEventListener("click", redraw("color"))
+
+            document.getElementById("randomizeColorButton").addEventListener("click", redraw("randomizecolor"))
+
+            /* //Render TATSUGIRI
+
+            
+            //Write data into the buffer object
+            gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(convertArrayToGLCoordinates(vertexTATSUGIRI,0.5,maxDimensionLength)),gl.STATIC_DRAW);
+            
+            //Assign the buffer object to an attribute variable
+            gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+
+            gl.enableVertexAttribArray(aPositionPointer);
+
+            // draw buffer that is bound to gl.ARRAY_BUFFER
+            gl.uniform4f(colorLocation,0.2,0.8,1,1.0);
+            gl.vertexAttrib1f(aPointSizePointer, 5);
+            gl.drawArrays(gl.POINTS, 0, vertexTATSUGIRI.length/2);
+            gl.drawArrays(gl.LINE_STRIP, 0, 4);     //T
+            gl.drawArrays(gl.LINE_STRIP, 4, 5);     //A
+            gl.drawArrays(gl.LINE_STRIP, 9, 4);     //T
+            gl.drawArrays(gl.LINE_STRIP, 13, 6);    //S
+            gl.drawArrays(gl.LINE_STRIP, 19, 4);    //U
+            gl.drawArrays(gl.LINE_STRIP, 23, 6);    //G
+            gl.drawArrays(gl.LINE_STRIP, 29, 2);    //I
+            gl.drawArrays(gl.LINE_STRIP, 31, 5);    //R
+            gl.drawArrays(gl.LINE_STRIP, 36, 2);    //I
+            */
+            
+            //delete buffer
+            gl.bindBuffer(gl.ARRAY_BUFFER, null)
+        }
+    
+    main()
+    </script>
+
+</body>
+</html>

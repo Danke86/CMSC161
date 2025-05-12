@@ -72,9 +72,9 @@
                 //Specular
                 vec4 viewPos = uViewMatrix * uModelMatrix * aPosition;
                 vec4 normalized_uEyeVector = normalize(-viewPos); 
-                vec4 normalized_uReflectedLightVector = normalize(2.0 * dot(normalized_uLightDirectionVector,normalized_aNormalVector) * normalized_aNormalVector - normalized_uLightDirectionVector);
+                vec4 normalized_uReflectedLightVector = normalize(2.0 * dot(normalized_aNormalVector,normalized_uLightDirectionVector) * normalized_aNormalVector - normalized_uLightDirectionVector);
                 float specularAngle = max(dot(normalized_uEyeVector,normalized_uReflectedLightVector),0.0);
-                float specular = pow(specularAngle, 16.0);
+                float specular = pow(specularAngle, 8.0);
 
                 vec4 ambientColor = ambient * uLightDiffuseColor * uMaterialAmbientColor;
                 vec4 specularColor = uSpecularStrength * specular * uLightDiffuseColor * uMaterialSpecularColor;

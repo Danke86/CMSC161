@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <script type="x-shader/x-vertex" id="vshader">
+        attribute vec4 aPosition;
+        attribute vec4 aNormal;   //variable for normal vector at each vertex
+
+        uniform mat4 uModelMatrix;                //Model Matrix
+        uniform mat4 uViewMatrix;                 //View Matrix
+        uniform mat4 uProjectionMatrix;           //Projection Matrix
+
+        uniform mat4 uNormalMatrix;               //Normal Matrix
+        
+        uniform vec4 uMaterialDiffuseColor;       //Kd
+        uniform vec4 uMaterialSpecularColor;      //Ks
+        uniform vec4 uMaterialAmbientColor;       //Ka
+        
+        
+        uniform vec4 uLightDiffuseColor;          //Ld
+        uniform vec4 uLightDirectionVector;       //l
+        uniform vec4 uEyeVector;                 
+        uniform vec4 uReflectedLightVector;  
+          
+        uniform float uSpecularStrength;
+        uniform float uAmbientStrength;
+
+        varying vec4 vAmbientColor;
+        varying vec4 vSpecularColor;
+        varying vec4 vDiffuseColor;
+
+        
+
+        varying vec4 vFinalColor;
+
+        uniform int uLightingModel; // 0 - Lambert, 1 - Phong
+
+        void main() {
+
+            gl_Position = uProjectionMatrix * uViewMatrix * uModelMatrix * aPosition;
+
+            //get Corrected Normal vector from transformation
+            vec4 corrected_aNormal = uNormalMatrix * aNormal;
+
+            //get normalized normal and light vector
+            vec4 normalized_aNormalVector = normalize(corrected_aNormal);
+            vec4 normalized_uLightDirectionVector = normalize(uLightDirectionVector);
+
+            //get lambertCooeficient = (-l . n)         
+            float lambertCoefficient = max(dot(-normalized_uLightDirectionVector,normalized_aNormalVector),0.0);;
+
+
+            // Vertex position in view space
+            vec4 viewPos = uViewMatrix * uModelMatrix * aPosition;
+            
+            // Light direction in view space
+            vec4 lightDirView = normalize(uViewMatrix * uLightDirectionVector);
+            
+            // View direction in view space
+            vec4 viewDirView = normalize(-viewPos);
+
+
+            if (uLightingModel == 0){ //Lambert
+                //Fd = Ld * Kd * (n dot -l)
+                vDiffuseColor =  uMaterialDiffuseColor * uLightDiffuseColor * lambertCoefficient;
+
+                vFinalColor = vec4(vDiffuseColor.r, vDiffuseColor.g, vDiffuseColor.b, 1.0);
+
+            }else if (uLightingModel == 1){ //Phong
+               //Ambient
+                vec4 ambient = uAmbientStrength * uLightDiffuseColor;
+
+                //Specular
+                vec4 viewPos = uViewMatrix * uModelMatrix * aPosition;
+                vec4 normalized_uEyeVector = normalize(-viewPos); 
+                vec4 normalized_uReflectedLightVector = normalize(2.0 * dot(normalized_uLightDirectionVector,normalized_aNormalVector) * normalized_aNormalVector - normalized_uLightDirectionVector);
+                float specularAngle = max(dot(normalized_uEyeVector,normalized_uReflectedLightVector),0.0);
+                float specular = pow(specularAngle, 16.0);
+
+                vec4 ambientColor = ambient * uLightDiffuseColor * uMaterialAmbientColor;
+                vec4 specularColor = uSpecularStrength * specular * uLightDiffuseColor * uMaterialSpecularColor;
+                vec4 diffuseColor =  lambertCoefficient * uLightDiffuseColor * uMaterialDiffuseColor ;
+                
+                vAmbientColor = vec4(ambientColor.r, ambientColor.g, ambientColor.b, 1.0);
+                vSpecularColor = vec4(specularColor.r, specularColor.g, specularColor.b, 1.0);
+                vDiffuseColor = vec4(diffuseColor.r, diffuseColor.g, diffuseColor.b, 1.0);
+                
+                //vFinalColor = vSpecularColor;
+                //Combine
+                vFinalColor =  vAmbientColor + vSpecularColor + vDiffuseColor;
+            }   
+            
+            //vFinalColor = vec4(diffuseColor.r, diffuseColor.g, diffuseColor.b, 1.0);
+
+            //Visualize Normals
+            //vFinalColor = vec4(normalized_aNormalVector.xyz * 0.5 + 0.5, 1.0);
+        }
+        </script>
+        
+        <script type="x-shader/x-fragment" id="fshader">
+        precision mediump float;
+
+        varying vec4 vFinalColor;
+        void main() {
+
+            gl_FragColor = vFinalColor;
+            
+            
+        }
+        </script>
+
+        <!--Import external javascript file-->
+        <!--Helper javascript methods for initializing webgl-->
+        <script src="./utils/webgl-init.js"></script>
+        <script src="./utils/webgl-utils.js"></script>
+        <script src="./utils/webgl-debug.js"></script>
+        <script src="./utils/gl-matrix-min.js"></script>
+        
+        <script>
+            function main(){
+                //Retrieve <canvas> element
+                var canvas = document.getElementById("main_canvas");
+                if(!canvas) {
+                console.log("Failed to retrieve the <canvas> element");
+                }
+
+                //Get the rendering context (WebGL)
+                var gl = initializeWebGL(canvas,true);
+                //initialize shaders program
+                var vertexShader = initializeShader(gl,"vshader");
+                var fragmentShader = initializeShader(gl, "fshader");
+                var program = initializeProgram(gl,vertexShader,fragmentShader);
+                gl.useProgram(program);
+
+                var aPositionPointer = gl.getAttribLocation(program,"aPosition");
+                gl.enableVertexAttribArray(aPositionPointer);
+                var aNormalPointer = gl.getAttribLocation(program,"aNormal");
+                gl.enableVertexAttribArray(aNormalPointer);
+                
+                var uFragColorPointer = gl.getUniformLocation(program,"uColor");
+                var uModelMatrixPointer = gl.getUniformLocation(program,"uModelMatrix");
+                var uViewMatrixPointer = gl.getUniformLocation(program,"uViewMatrix");
+                var uProjectionMatrixPointer = gl.getUniformLocation(program,"uProjectionMatrix");
+
+                let uLightingModelPtr = gl.getUniformLocation(program, "uLightingModel");
+
+                gl.clearColor(0.0,0.0,0.0,1.0);
+                gl.clear(gl.COLOR_BUFFER_BIT);
+
+                //ENABLE DEPTH TESTING
+                gl.enable(gl.DEPTH_TEST);
+                gl.clear(gl.DEPTH_BUFFER_BIT);
+                
+                var modelMatrix;
+                var viewMatrix;
+                var projectionMatrix;
+
+                /**START PROJECTION MATRIX SPECIFICATION**/
+                var fieldOfViewYAxis = glMatrix.toRadian(30);
+                var aspectRatio      = canvas.width/canvas.height;
+                var nearPlane        = 1;
+                var farPlane         = 100;
+
+                projectionMatrix = mat4.create();
+                mat4.perspective(projectionMatrix,fieldOfViewYAxis,aspectRatio,nearPlane,farPlane);
+                gl.uniformMatrix4fv(uProjectionMatrixPointer,false,new Float32Array(projectionMatrix));
+                /**END PROJECTION MATRIX SPECIFICATION**/
+
+                /**START VIEW MATRIX SPECIFICATION**/
+                let viewX = document.querySelector("#viewX").value
+                let viewY = document.querySelector("#viewY").value
+                let viewZ = document.querySelector("#viewZ").value
+
+                let lookAtPoint = [0.0,0.0,0.0,1.0];              //where the camera is looking
+                let eyePoint    = [viewX,viewY,viewZ,1.0];              //where the camera is placed
+                let upVector    = [0.0,1.0,0.0,0.0];              //orientation of the camera
+
+                viewMatrix = mat4.create();
+                mat4.lookAt(viewMatrix,eyePoint,lookAtPoint,upVector);
+                gl.uniformMatrix4fv(uViewMatrixPointer,false,new Float32Array(viewMatrix));
+                /**END VIEW MATRIX SPECIFICATION**/
+
+                //MODEL MATRIX
+                modelMatrix = mat4.create();
+                modelMatrix = mat4.identity(modelMatrix);
+                gl.uniformMatrix4fv(uModelMatrixPointer,false,new Float32Array(modelMatrix));
+
+                //add normal matrix
+                var normalMatrix = mat4.create();
+                var uNormalMatrixPtr = gl.getUniformLocation(program,"uNormalMatrix");
+                mat4.invert(normalMatrix,modelMatrix);
+                mat4.transpose(normalMatrix,normalMatrix);
+                gl.uniformMatrix4fv(uNormalMatrixPtr,false,new Float32Array(normalMatrix));
+            
+
+                let directionX = document.querySelector("#directionX").value
+                let directionY = document.querySelector("#directionY").value
+                let directionZ = document.querySelector("#directionZ").value
+
+                let colorR = document.querySelector("#colorR").value
+                let colorG = document.querySelector("#colorG").value
+                let colorB = document.querySelector("#colorB").value
+
+                //set-up light and material parameters
+                var uMaterialDiffuseColorPtr = gl.getUniformLocation(program,"uMaterialDiffuseColor");
+                gl.uniform4f(uMaterialDiffuseColorPtr,1,1,1,1.0);
+
+                var uLightDiffuseColorPtr = gl.getUniformLocation(program,"uLightDiffuseColor");
+                gl.uniform4f(uLightDiffuseColorPtr,colorR,colorB,colorB,1.0);
+
+                var uLightDirectionVectorPtr= gl.getUniformLocation(program,"uLightDirectionVector");
+                gl.uniform4f(uLightDirectionVectorPtr,directionX,directionY,directionZ,0.0);
+
+                //Phong Lighting
+                var uSpecularStrength = gl.getUniformLocation(program, "uSpecularStrength");
+                gl.uniform1f(uSpecularStrength, 1); 
+
+                var uAmbientStrength = gl.getUniformLocation(program, "uAmbientStrength");
+                gl.uniform1f(uAmbientStrength, 0.05);
+
+
+
+                var uMaterialSpecularColorPtr = gl.getUniformLocation(program, "uMaterialSpecularColor");
+                gl.uniform4f(uMaterialSpecularColorPtr, 1.0, 1.0, 1.0, 1.0); // White specular highlights
+                
+                var uMaterialAmbientColorPtr = gl.getUniformLocation(program, "uMaterialAmbientColor");
+                gl.uniform4f(uMaterialAmbientColorPtr, 0.1, 0.1, 0.1, 1.0); 
+
+
+                //Update on change
+                function updateEyePosition(){
+                    viewX = document.querySelector("#viewX").value
+                    viewY = document.querySelector("#viewY").value
+                    viewZ = document.querySelector("#viewZ").value
+
+                    console.log(viewX,viewY,viewZ)
+
+                    eyePoint = [viewX,viewY,viewZ,1.0]; 
+
+                    viewMatrix = mat4.create();
+                    mat4.lookAt(viewMatrix,eyePoint,lookAtPoint,upVector);
+                    gl.uniformMatrix4fv(uViewMatrixPointer,false,new Float32Array(viewMatrix));
+                }
+
+                updateEyePosition()
+
+                function updateLightDirection(){
+                    directionX = document.querySelector("#directionX").value
+                    directionY = document.querySelector("#directionY").value
+                    directionZ = document.querySelector("#directionZ").value
+
+                    console.log(directionX,directionY,directionZ)
+
+                    gl.uniform4f(uLightDirectionVectorPtr,directionX,directionY,directionZ,0.0);
+                    
+                }
+
+                updateLightDirection()
+
+                function updateLightColor(){
+                    colorR = document.querySelector("#colorR").value
+                    colorG = document.querySelector("#colorG").value
+                    colorB = document.querySelector("#colorB").value
+
+                    console.log(colorR, colorG, colorB)
+
+                    gl.uniform4f(uLightDiffuseColorPtr,colorR,colorG,colorB,1.0);
+                }
+
+                updateLightColor()
+
+                //Switching Lighting modes
+                let lightingMode = 0
+                
+                function switchToLambert(){
+                    if (lightingMode != 0){
+                        gl.uniform1i(uLightingModelPtr, 0);
+                        console.log("Switched to Lambert lighting");
+                        lightingMode = 0
+                    }
+
+                    // Disable the Lambert button and enable the Phong button
+                    document.getElementById("lambertbtn").disabled = true;
+                    document.getElementById("phongbtn").disabled = false;
+                    
+
+                }
+
+                switchToLambert()
+
+                function switchToPhong(){
+                    if (lightingMode != 1){
+                        gl.uniform1i(uLightingModelPtr, 1);
+                        console.log("Switched to Phong lighting");
+                        lightingMode = 1
+                    }
+
+                    // Disable the Phong button and enable the Lambert button
+                    document.getElementById("phongbtn").disabled = true;
+                    document.getElementById("lambertbtn").disabled = false;
+                }
+
+                /* Cube */
+                var vertices = [   // Coordinates
+    
+                // Front face
+                -1.0, -1.0,  1.0, 1.0,
+                1.0, -1.0,  1.0, 1.0,
+                1.0,  1.0,  1.0, 1.0,
+                -1.0,  1.0,  1.0, 1.0,
+
+                // Back face
+                -1.0, -1.0, -1.0, 1.0,
+                -1.0,  1.0, -1.0, 1.0,
+                1.0,  1.0, -1.0, 1.0,
+                1.0, -1.0, -1.0, 1.0,
+
+                // Top face
+                -1.0,  1.0, -1.0, 1.0,
+                -1.0,  1.0,  1.0, 1.0,
+                1.0,  1.0,  1.0, 1.0,
+                1.0,  1.0, -1.0, 1.0,
+
+                // Bottom face
+                -1.0, -1.0, -1.0, 1.0,
+                1.0, -1.0, -1.0, 1.0,
+                1.0, -1.0,  1.0, 1.0,
+                -1.0, -1.0,  1.0, 1.0,
+
+                // Right face
+                1.0, -1.0, -1.0, 1.0,
+                1.0,  1.0, -1.0, 1.0,
+                1.0,  1.0,  1.0, 1.0,
+                1.0, -1.0,  1.0, 1.0,
+
+                // Left face
+                -1.0, -1.0, -1.0, 1.0,
+                -1.0, -1.0,  1.0, 1.0,
+                -1.0,  1.0,  1.0, 1.0,
+                -1.0,  1.0, -1.0, 1.0
+                ];
+
+                //buffer creation
+                var verticesBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, verticesBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aPositionPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aPositionPointer);
+
+                // Indices of the vertices
+                var indices = [
+                    0, 1, 2,      0, 2, 3,    // Front face
+                    4, 5, 6,      4, 6, 7,    // Back face
+                    8, 9, 10,     8, 10, 11,  // Top face
+                    12, 13, 14,   12, 14, 15, // Bottom face
+                    16, 17, 18,   16, 18, 19, // Right face
+                    20, 21, 22,   20, 22, 23  // Left face
+                ];  
+
+                //buffer creation
+                var indexBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint8Array(indices), gl.STATIC_DRAW);
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+                var normals = [   // Normal of each vertex
+                0.0, 0.0, 1.0, 0.0,   0.0, 0.0, 1.0, 0.0,   0.0, 0.0, 1.0, 0.0,   0.0, 0.0, 1.0, 0.0,  // front
+                0.0, 0.0, -1.0, 0.0,   0.0, 0.0, -1.0, 0.0,   0.0, 0.0, -1.0, 0.0,   0.0, 0.0, -1.0, 0.0,  // front
+                0.0, 1.0, 0.0, 0.0,   0.0, 1.0, 0.0, 0.0,   0.0, 1.0, 0.0, 0.0,   0.0, 1.0, 0.0, 0.0,  // front
+                0.0, -1.0, 0.0, 0.0,   0.0, -1.0, 0.0, 0.0,   0.0, -1.0, 0.0, 0.0,   0.0, -1.0, 0.0, 0.0,  // front
+                1.0, 0.0, 0.0, 0.0,   1.0, 0.0, 0.0, 0.0,   1.0, 0.0, 0.0, 0.0,   1.0, 0.0, 0.0, 0.0,  // right
+                -1.0, 0.0, 0.0, 0.0,  -1.0, 0.0, 0.0, 0.0,  -1.0, 0.0, 0.0, 0.0,  -1.0, 0.0, 0.0, 0.0   // left
+                ];
+                //buffer creation
+                var normalBuffer = gl.createBuffer();
+                gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+                gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(normals), gl.STATIC_DRAW);
+                gl.vertexAttribPointer(aNormalPointer,4,gl.FLOAT,false,0,0);
+                gl.enableVertexAttribArray(aNormalPointer);
+                
+                //draw part
+                gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0); 
+
+
+                
+                
+
+                // Variables for animation
+                let startTime = performance.now(); 
+                let animation = false;
+
+                /* Function for toggling rotation on button press */
+                function toggleAnimation() {
+                    animation = !animation;
+                    if(animation) { document.querySelector("#animationbtn").innerText = "OFF"; }
+                    else if(!animation) { document.querySelector("#animationbtn").innerText = "ON"; }
+                }
+
+                window.toggleAnimation = toggleAnimation;
+                let lastTime = 0; // Tracks the time of the last frame
+                let rotationSpeed = 30; // Degrees per second
+
+                let angle = 0;
+                
+                function render(){
+                    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+                    
+                    // Calculate elapsed time
+                    let currentTime = performance.now();
+                    let deltaTime = (currentTime - lastTime) / 1000; 
+                    lastTime = currentTime;
+
+                    //update rotation
+                    if (animation) {
+                        angle += rotationSpeed * deltaTime; // Rotate by 1 degree per frame
+                    }
+                    mat4.identity(modelMatrix);
+                    mat4.rotateY(modelMatrix, modelMatrix, glMatrix.toRadian(angle));
+                    gl.uniformMatrix4fv(uModelMatrixPointer, false, modelMatrix);
+
+                    // Update normal matrix
+                    var normalMatrix = mat4.create();
+                    mat4.invert(normalMatrix, modelMatrix);
+                    mat4.transpose(normalMatrix, normalMatrix);
+                    gl.uniformMatrix4fv(uNormalMatrixPtr, false, normalMatrix);
+
+                    // Draw
+                    gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, indexBuffer);
+                    gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_BYTE, 0);
+
+                    requestAnimationFrame(render);
+                }
+                render();
+
+                /* Retrieves values of the input sliders */
+                document.getElementById("viewX").addEventListener("input", updateEyePosition);
+                document.getElementById("viewY").addEventListener("input", updateEyePosition);
+                document.getElementById("viewZ").addEventListener("input", updateEyePosition);
+
+                document.getElementById("directionX").addEventListener("input", updateLightDirection);
+                document.getElementById("directionY").addEventListener("input", updateLightDirection);
+                document.getElementById("directionZ").addEventListener("input", updateLightDirection);
+
+                document.getElementById("colorR").addEventListener("input", updateLightColor);
+                document.getElementById("colorG").addEventListener("input", updateLightColor);
+                document.getElementById("colorB").addEventListener("input", updateLightColor);
+
+                document.getElementById("lambertbtn").addEventListener("click", switchToLambert)
+                document.getElementById("phongbtn").addEventListener("click", switchToPhong)
+            }
+
+
+        </script>
+
+
+    </head>
+
+
+
+    <body onload="main()">
+        <canvas id="main_canvas" width="800" height="800" style="border: 1px black solid; ">
+        </canvas>
+        <br>
+        <span>==========================================================================================</span>
+        <br>
+
+        <label>ANIMATION</label>
+        <button id="animationbtn" onclick="toggleAnimation()">ON</button>
+
+        <br>
+        <span>==========================================================================================</span>
+        <br>
+
+        <label>LIGHTING MODEL</label>
+        <button id="phongbtn">PHONG</button>
+        <button id="lambertbtn">LAMBERT</button>
+
+        <br>
+        <span>==========================================================================================</span>
+        <br>
+
+        <label>LIGHTING DIRECTION:</label>
+        <br>
+        X = <input type="range" id="directionX" min="-10" max="10" value="-1" step="0.01"> <span id="directionXValue">0.00</span>  |
+        Y = <input type="range" id="directionY" min="-10" max="10" value="-3" step="0.01"> <span id="directionYValue">0.00</span> |
+        Z = <input type="range" id="directionZ" min="-10" max="10" value="-5" step="0.01"> <span id="directionZValue">0.00</span>
+
+        <br>
+
+        <label>LIGHT COLOR:</label>
+        <br>
+        R = <input type="range" id="colorR" min="0" max="1" value="0" step="0.01"> <span id="colorRValue">0.00</span>  |
+        G = <input type="range" id="colorG" min="0" max="1" value="1" step="0.01"> <span id="colorGValue">0.00</span> |
+        B = <input type="range" id="colorB" min="0" max="1" value="0" step="0.01"> <span id="colorBValue">0.00</span>
+
+        <br>
+
+        <label>EYE POSITION:</label>
+        <br>
+        X = <input type="range" id="viewX" min="-10" max="10" value="3" step="0.01"> <span id="viewXValue">0.00</span>  |
+        Y = <input type="range" id="viewY" min="-10" max="10" value="4" step="0.01"> <span id="viewYValue">0.00</span> |
+        Z = <input type="range" id="viewZ" min="-10" max="10" value="5" step="0.01"> <span id="viewZValue">0.00</span>
+        <br>
+
+    </body>
+</html>
